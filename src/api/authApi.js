@@ -1,4 +1,4 @@
-import { USE_MOCKS } from './apiClient'
+import { USE_SUPABASE_AUTH } from './apiClient'
 import { mockDelay } from './mockHelpers'
 import { supabase } from '@/lib/supabaseClient'
 
@@ -25,7 +25,7 @@ async function toAppUser(authUser) {
 
 export const authApi = {
   async login({ email, password }) {
-    if (USE_MOCKS) {
+    if (!USE_SUPABASE_AUTH) {
       if (!email || !password) {
         const err = new Error('Invalid credentials')
         err.code = 'INVALID_CREDENTIALS'
@@ -50,7 +50,7 @@ export const authApi = {
   },
 
   async register({ name, email, password }) {
-    if (USE_MOCKS) {
+    if (!USE_SUPABASE_AUTH) {
       return mockDelay({
         token: 'mock-jwt-token',
         user: { id: 'usr_new', name, email, role: 'dentist' },
@@ -75,7 +75,7 @@ export const authApi = {
   },
 
   async forgotPassword(email) {
-    if (USE_MOCKS) {
+    if (!USE_SUPABASE_AUTH) {
       return mockDelay({ success: true })
     }
     const { error } = await supabase.auth.resetPasswordForEmail(email)
@@ -84,7 +84,7 @@ export const authApi = {
   },
 
   async me() {
-    if (USE_MOCKS) {
+    if (!USE_SUPABASE_AUTH) {
       return mockDelay({ id: 'usr_1', name: 'Dr. Demo', email: 'demo@dentai.app', role: 'dentist' })
     }
     const {
@@ -100,14 +100,14 @@ export const authApi = {
   },
 
   async logout() {
-    if (USE_MOCKS) return mockDelay({ success: true }, 100)
+    if (!USE_SUPABASE_AUTH) return mockDelay({ success: true }, 100)
     const { error } = await supabase.auth.signOut()
     if (error) throw error
     return { success: true }
   },
 
   async resendConfirmation(email) {
-    if (USE_MOCKS) return mockDelay({ success: true }, 300)
+    if (!USE_SUPABASE_AUTH) return mockDelay({ success: true }, 300)
     const { error } = await supabase.auth.resend({ type: 'signup', email })
     if (error) throw error
     return { success: true }

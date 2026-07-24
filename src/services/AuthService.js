@@ -1,7 +1,7 @@
 import { authApi } from '@/api/authApi'
 import { storage } from '@/utils/storage'
 import { supabase } from '@/lib/supabaseClient'
-import { USE_MOCKS } from '@/api/apiClient'
+import { USE_SUPABASE_AUTH } from '@/api/apiClient'
 
 function normalizeError(error) {
   if (error.code === 'INVALID_CREDENTIALS') {
@@ -94,7 +94,7 @@ export const AuthService = {
   // sign-out from another tab, etc). No-op under mocks. Returns an
   // unsubscribe function.
   onAuthStateChange(callback) {
-    if (USE_MOCKS) return () => {}
+    if (!USE_SUPABASE_AUTH) return () => {}
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {

@@ -30,7 +30,7 @@ export default function RecentReports() {
         )}
 
         {!loading &&
-          data?.items.map((report) => (
+          (data?.items ?? []).map((report) => (
             <div key={report.id} className="flex items-center gap-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15">
                 <FileText className="h-4 w-4 text-accent" />
