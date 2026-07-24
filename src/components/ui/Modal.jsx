@@ -63,15 +63,15 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className={`relative w-full ${widths[size]} rounded-card border border-border bg-surface shadow-xl`}
+            className={`relative w-full ${widths[size]} rounded-card border border-border bg-card shadow-xl`}
           >
             {title && (
               <div className="flex items-center justify-between border-b border-border px-5 py-4">
-                <h2 className="font-display text-base font-medium text-text">{title}</h2>
+                <h2 className="font-display text-base font-medium text-foreground">{title}</h2>
                 <button
                   onClick={onClose}
                   aria-label="Close"
-                  className="rounded-md p-1 text-text-secondary hover:bg-surface-hover hover:text-text"
+                  className="rounded-md p-1 text-muted-foreground hover:bg-card-hover hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>

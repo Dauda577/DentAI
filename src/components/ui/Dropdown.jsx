@@ -31,7 +31,7 @@ export default function Dropdown({ trigger, children, align = 'right' }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.12 }}
-            className={`absolute z-40 mt-2 min-w-[10rem] rounded-lg border border-border bg-surface py-1 shadow-lg
+            className={`absolute z-40 mt-2 min-w-[10rem] rounded-lg border border-border bg-card py-1 shadow-lg
               ${align === 'right' ? 'right-0' : 'left-0'}`}
             onClick={() => setIsOpen(false)}
           >
@@ -47,8 +47,8 @@ Dropdown.Item = function DropdownItem({ children, onClick, danger = false, icon:
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-surface-hover
-        ${danger ? 'text-error' : 'text-text'}`}
+      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-card-hover
+        ${danger ? 'text-destructive' : 'text-foreground'}`}
     >
       {Icon && <Icon className="h-4 w-4" />}
       {children}

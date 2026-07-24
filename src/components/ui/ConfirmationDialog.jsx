@@ -29,7 +29,7 @@ export default function ConfirmationDialog({
         </>
       }
     >
-      {description && <p className="text-sm text-text-secondary">{description}</p>}
+      {description && <p className="text-sm text-muted-foreground">{description}</p>}
     </Modal>
   )
 }

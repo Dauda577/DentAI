@@ -1,8 +1,9 @@
 const TONES = {
+  primary: 'bg-primary',
   accent: 'bg-accent',
   success: 'bg-success',
   warning: 'bg-warning',
-  error: 'bg-error',
+  error: 'bg-destructive',
 }
 
 export default function ProgressBar({ value = 0, tone = 'accent', className = '', showLabel = false }) {
@@ -20,7 +21,7 @@ export default function ProgressBar({ value = 0, tone = 'accent', className = ''
           aria-valuemax={100}
         />
       </div>
-      {showLabel && <span className="text-xs tabular-nums text-text-secondary">{Math.round(clamped)}%</span>}
+      {showLabel && <span className="text-xs tabular-nums text-muted-foreground">{Math.round(clamped)}%</span>}
     </div>
   )
 }

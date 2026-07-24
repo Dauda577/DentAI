@@ -10,7 +10,7 @@ const Select = forwardRef(function Select(
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-text">
+        <label htmlFor={inputId} className="text-sm font-medium text-foreground">
           {label}
         </label>
       )}
@@ -20,9 +20,9 @@ const Select = forwardRef(function Select(
           ref={ref}
           aria-invalid={Boolean(error)}
           defaultValue=""
-          className={`h-10 w-full appearance-none rounded-lg border bg-surface px-3 pr-9 text-sm text-text
-            outline-none transition-colors focus:border-accent
-            ${error ? 'border-error' : 'border-border'} ${className}`}
+          className={`h-10 w-full appearance-none rounded-lg border bg-card px-3 pr-9 text-sm text-foreground
+            outline-none transition-colors focus:border-primary
+            ${error ? 'border-destructive' : 'border-border'} ${className}`}
           {...rest}
         >
           <option value="" disabled>
@@ -34,9 +34,9 @@ const Select = forwardRef(function Select(
             </option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       </div>
-      {error && <p className="text-xs text-error">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   )
 })

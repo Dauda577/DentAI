@@ -1,19 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  /* DentAI design tokens — from brief */
-  --color-bg: #111827;
-  --color-surface: #1F2937;
-  --color-surface-hover: #24304a;
-  --color-accent: #14B8A6;
-  --color-accent-hover: #0F766E;
-  --color-text: #FFFFFF;
-  --color-text-secondary: #9CA3AF;
-  --color-border: #374151;
-  --color-error: #EF4444;
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-info: #3B82F6;
+  /* DentAI design tokens — semantic color system */
+  --color-background: #FAFBFC;
+  --color-card: #FFFFFF;
+  --color-card-hover: #F3F5F7;
+
+  --color-foreground: #2D3748;
+  --color-muted-foreground: #718096;
+
+  --color-border: #E5E7EB;
+
+  --color-primary: oklch(0.55 0.09 235); /* #2F6F91 deep dental blue */
+  --color-primary-hover: #25576F;
+  --color-secondary: #A8C8B8; /* soft sage green */
+  --color-accent: #6BBFBF; /* muted aqua */
+
+  --color-success: #43A047;
+  --color-warning: #F9A825;
+  --color-destructive: #D32F2F;
+  --color-muted: #9CA3AF; /* "Pending" grey */
 
   --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -26,11 +32,11 @@
     border-color: var(--color-border);
   }
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
   body {
-    background-color: var(--color-bg);
-    color: var(--color-text);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
   }
@@ -39,7 +45,7 @@
     font-weight: 500;
   }
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 }

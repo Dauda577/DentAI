@@ -1,7 +1,7 @@
 export default function Card({ children, className = '', as: As = 'div', ...rest }) {
   return (
     <As
-      className={`rounded-card border border-border bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.3)] ${className}`}
+      className={`rounded-card border border-border bg-card shadow-[0_1px_3px_rgba(45,55,72,0.08)] ${className}`}
       {...rest}
     >
       {children}

@@ -26,13 +26,13 @@ export default function Table({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-text-secondary">
+            <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
               {columns.map((col) => (
                 <th key={col.key} className="whitespace-nowrap px-4 py-3 font-medium">
                   {col.sortable ? (
                     <button
                       onClick={() => onSortChange?.(col.key)}
-                      className="flex items-center gap-1 hover:text-text"
+                      className="flex items-center gap-1 hover:text-foreground"
                     >
                       {col.header}
                       {sort?.key === col.key ? (
@@ -66,7 +66,7 @@ export default function Table({
 
             {!loading && data.length === 0 && (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-10 text-center text-text-secondary">
+                <td colSpan={columns.length} className="px-4 py-10 text-center text-muted-foreground">
                   {emptyMessage}
                 </td>
               </tr>
@@ -87,12 +87,12 @@ export default function Table({
                   role={onRowClick ? 'button' : undefined}
                   className={`border-b border-border/60 ${
                     onRowClick
-                      ? 'cursor-pointer hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none'
+                      ? 'cursor-pointer hover:bg-card-hover focus-visible:bg-card-hover focus-visible:outline-none'
                       : ''
                   }`}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3.5 text-text">
+                    <td key={col.key} className="px-4 py-3.5 text-foreground">
                       {col.render ? col.render(row) : row[col.key]}
                     </td>
                   ))}

@@ -1,10 +1,10 @@
 const TONES = {
-  neutral: 'bg-border/40 text-text-secondary',
+  neutral: 'bg-muted/15 text-muted-foreground',
   accent: 'bg-accent/15 text-accent',
   success: 'bg-success/15 text-success',
   warning: 'bg-warning/15 text-warning',
-  error: 'bg-error/15 text-error',
-  info: 'bg-info/15 text-info',
+  error: 'bg-destructive/15 text-destructive',
+  info: 'bg-accent/15 text-accent',
 }
 
 export default function Badge({ children, tone = 'neutral', className = '' }) {

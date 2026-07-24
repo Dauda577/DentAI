@@ -2,11 +2,11 @@ import { Loader2 } from 'lucide-react'
 
 const VARIANTS = {
   primary:
-    'bg-accent text-white hover:bg-accent-hover active:bg-accent-hover disabled:bg-accent/40',
+    'bg-primary text-white hover:bg-primary-hover active:bg-primary-hover disabled:bg-primary/40',
   secondary:
-    'bg-surface text-text border border-border hover:bg-surface-hover disabled:opacity-40',
-  ghost: 'bg-transparent text-text-secondary hover:text-text hover:bg-surface disabled:opacity-40',
-  danger: 'bg-error/10 text-error border border-error/30 hover:bg-error/20 disabled:opacity-40',
+    'bg-card text-foreground border border-border hover:bg-card-hover disabled:opacity-40',
+  ghost: 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-card disabled:opacity-40',
+  danger: 'bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive/20 disabled:opacity-40',
 }
 
 const SIZES = {

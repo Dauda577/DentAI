@@ -2,8 +2,8 @@ export default function Switch({ checked, onChange, label, description, id }) {
   return (
     <label htmlFor={id} className="flex cursor-pointer items-center justify-between gap-4 py-1">
       <div>
-        <p className="text-sm font-medium text-text">{label}</p>
-        {description && <p className="text-xs text-text-secondary">{description}</p>}
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
       </div>
       <button
         id={id}
@@ -11,7 +11,7 @@ export default function Switch({ checked, onChange, label, description, id }) {
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-          checked ? 'bg-accent' : 'bg-border'
+          checked ? 'bg-primary' : 'bg-border'
         }`}
       >
         <span
