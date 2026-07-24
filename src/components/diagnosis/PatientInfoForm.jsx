@@ -28,8 +28,7 @@ export default function PatientInfoForm({ register, errors }) {
           placeholder="Select sex"
           options={[
             { value: 'male', label: 'Male' },
-            { value: 'female', label: 'Female' },
-            { value: 'other', label: 'Other' },
+            { value: 'female', label: 'Female' }
           ]}
           error={errors.sex?.message}
           {...register('sex')}
