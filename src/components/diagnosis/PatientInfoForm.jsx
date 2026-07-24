@@ -6,9 +6,15 @@ export default function PatientInfoForm({ register, errors }) {
   return (
     <Card>
       <Card.Header>
-        <h3 className="text-sm font-medium text-text">Patient information</h3>
+        <h3 className="text-sm font-medium text-text">SECTION A: PATIENT DEMOGRAPHICS</h3>
       </Card.Header>
-      <Card.Body className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <Card.Body className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Input
+          label="Patient ID"
+          placeholder="e.g. PT-0042"
+          error={errors.patientId?.message}
+          {...register('patientId')}
+        />
         <Input label="Patient name" placeholder="Full name" error={errors.name?.message} {...register('name')} />
         <Input
           label="Age"

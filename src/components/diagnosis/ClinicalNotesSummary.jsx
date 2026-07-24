@@ -1,10 +1,11 @@
 import Card from '@/components/ui/Card'
 
 const FIELDS = [
-  { key: 'chiefComplaint', label: 'Chief complaint' },
-  { key: 'history', label: 'History' },
-  { key: 'medicalHistory', label: 'Medical history' },
-  { key: 'oralExamination', label: 'Oral examination' },
+  { key: 'chiefComplaint', label: 'Chief Complaint' },
+  { key: 'subsequent', label: 'Subsequent' },
+  { key: 'pastMedicalHistory', label: 'Past Medical History' },
+  { key: 'presentMedicalHistory', label: 'Present Medical History' },
+  { key: 'oralExamination', label: 'Oral Examination' },
 ]
 
 export default function ClinicalNotesSummary({ notes }) {

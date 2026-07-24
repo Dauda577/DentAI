@@ -6,6 +6,7 @@ export const loginSchema = z.object({
 })
 
 export const patientInfoSchema = z.object({
+  patientId: z.string().optional().default(''),
   name: z.string().min(1, 'Patient name is required'),
   age: z
     .number({ invalid_type_error: 'Age is required' })
@@ -19,7 +20,8 @@ export const patientInfoSchema = z.object({
 
 export const clinicalNotesSchema = z.object({
   chiefComplaint: z.string().min(1, 'Chief complaint is required'),
-  history: z.string().optional().default(''),
-  medicalHistory: z.string().optional().default(''),
+  subsequent: z.string().optional().default(''),
+  pastMedicalHistory: z.string().optional().default(''),
+  presentMedicalHistory: z.string().optional().default(''),
   oralExamination: z.string().optional().default(''),
 })

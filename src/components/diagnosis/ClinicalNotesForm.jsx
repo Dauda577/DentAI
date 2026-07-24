@@ -5,23 +5,32 @@ export default function ClinicalNotesForm({ register, errors }) {
   return (
     <Card>
       <Card.Header>
-        <h3 className="text-sm font-medium text-text">Clinical notes</h3>
+        <h3 className="text-sm font-medium text-text">SECTION B: CLINICAL NOTES</h3>
       </Card.Header>
       <Card.Body className="flex flex-col gap-4">
         <Textarea
-          label="Chief complaint"
+          label="Chief Complaint"
           placeholder="What brings the patient in today?"
           error={errors.chiefComplaint?.message}
           {...register('chiefComplaint')}
         />
-        <Textarea label="History" placeholder="Relevant dental history" {...register('history')} />
         <Textarea
-          label="Medical history"
-          placeholder="Relevant medical history, medications, allergies"
-          {...register('medicalHistory')}
+          label="Subsequent"
+          placeholder="Subsequent history / course since onset"
+          {...register('subsequent')}
         />
         <Textarea
-          label="Oral examination"
+          label="Past Medical History"
+          placeholder="Prior conditions, surgeries, medications, allergies"
+          {...register('pastMedicalHistory')}
+        />
+        <Textarea
+          label="Present Medical History"
+          placeholder="Current conditions, medications, ongoing treatment"
+          {...register('presentMedicalHistory')}
+        />
+        <Textarea
+          label="Oral Examination"
           placeholder="Clinical findings from the oral exam"
           {...register('oralExamination')}
         />
