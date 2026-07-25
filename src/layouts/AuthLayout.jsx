@@ -9,7 +9,7 @@ export default function AuthLayout() {
         src={vectorIllustration}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-200"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
       />
 
       <div className="relative z-10 w-full max-w-sm">
@@ -18,7 +18,7 @@ export default function AuthLayout() {
             <Stethoscope className="h-5.5 w-5.5 text-accent" />
           </div>
           <span className="font-display text-lg font-semibold text-foreground">
-            Dent<span className="text-primary">AI</span>
+            Dent<span className="text-primary/70">AI</span>
           </span>
         </div>
         <div className="rounded-card border border-border bg-card p-6 shadow-lg">
