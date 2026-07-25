@@ -49,12 +49,21 @@ export default function NewDiagnosis() {
         description="Enter patient information, clinical notes, and upload a CBCT scan for analysis."
       />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-        <PatientInfoForm register={register} errors={errors} />
-        <ClinicalNotesForm register={register} errors={errors} />
-        <CBCTUploader onFileChange={setCbctFile} />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="flex flex-col gap-6 lg:col-span-2">
+            <PatientInfoForm register={register} errors={errors} />
+            <ClinicalNotesForm register={register} errors={errors} />
+          </div>
 
-        <div className="flex justify-end">
+          <div className="lg:col-span-1">
+            <div className="lg:sticky lg:top-6">
+              <CBCTUploader onFileChange={setCbctFile} />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end">
           <Button type="submit" size="lg" isLoading={isSubmitting} disabled={isSubmitting}>
             Analyze Patient
           </Button>
