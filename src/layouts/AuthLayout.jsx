@@ -4,12 +4,12 @@ import vectorIllustration from '@/assets/vector_illustration.png'
 
 export default function AuthLayout() {
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-bg px-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
       <img
         src={vectorIllustration}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-10"
       />
 
       <div className="relative z-10 w-full max-w-sm">
@@ -17,11 +17,11 @@ export default function AuthLayout() {
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15">
             <Stethoscope className="h-5.5 w-5.5 text-accent" />
           </div>
-          <span className="font-display text-lg font-semibold text-text">
-            Dent<span className="text-accent">AI</span>
+          <span className="font-display text-lg font-semibold text-foreground">
+            Dent<span className="text-primary">AI</span>
           </span>
         </div>
-        <div className="rounded-card border border-border bg-surface p-6 shadow-lg">
+        <div className="rounded-card border border-border bg-card p-6 shadow-lg">
           <Outlet />
         </div>
       </div>

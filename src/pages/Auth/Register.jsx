@@ -85,9 +85,9 @@ export default function Register() {
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15">
           <MailCheck className="h-5.5 w-5.5 text-accent" />
         </div>
-        <h1 className="mt-4 font-display text-xl font-semibold text-text">Check your email</h1>
-        <p className="mt-2 text-sm text-text-secondary">
-          We've sent a confirmation link to <span className="font-medium text-text">{confirmationEmail}</span>.
+        <h1 className="mt-4 font-display text-xl font-semibold text-foreground">Check your email</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          We've sent a confirmation link to <span className="font-medium text-foreground">{confirmationEmail}</span>.
           Click it to activate your account, then sign in.
         </p>
 
@@ -102,7 +102,7 @@ export default function Register() {
           {resendCooldown > 0 ? `Resend email (${resendCooldown}s)` : 'Resend email'}
         </Button>
 
-        <Link to={ROUTES.LOGIN} className="mt-4 text-sm text-accent hover:underline">
+        <Link to={ROUTES.LOGIN} className="mt-4 text-sm text-primary hover:underline">
           Back to sign in
         </Link>
       </div>
@@ -111,8 +111,8 @@ export default function Register() {
 
   return (
     <div>
-      <h1 className="font-display text-xl font-semibold text-text">Create account</h1>
-      <p className="mt-1 text-sm text-text-secondary">Set up your DentAI clinical workspace.</p>
+      <h1 className="font-display text-xl font-semibold text-foreground">Create account</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Set up your DentAI clinical workspace.</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
         <Input label="Full name" placeholder="Dr. Jane Doe" error={errors.name?.message} {...register('name')} />
@@ -139,7 +139,7 @@ export default function Register() {
         />
 
         {formError && (
-          <p role="alert" className="text-sm text-error">
+          <p role="alert" className="text-sm text-destructive">
             {formError}
           </p>
         )}
@@ -149,9 +149,9 @@ export default function Register() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-text-secondary">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link to={ROUTES.LOGIN} className="text-accent hover:underline">
+        <Link to={ROUTES.LOGIN} className="text-primary hover:underline">
           Sign in
         </Link>
       </p>

@@ -35,11 +35,11 @@ export default function ForgotPassword() {
   if (sent) {
     return (
       <div>
-        <h1 className="font-display text-xl font-semibold text-text">Check your email</h1>
-        <p className="mt-2 text-sm text-text-secondary">
+        <h1 className="font-display text-xl font-semibold text-foreground">Check your email</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
           If an account exists for that address, we've sent instructions to reset your password.
         </p>
-        <Link to={ROUTES.LOGIN} className="mt-6 inline-block text-sm text-accent hover:underline">
+        <Link to={ROUTES.LOGIN} className="mt-6 inline-block text-sm text-primary hover:underline">
           Back to sign in
         </Link>
       </div>
@@ -48,8 +48,8 @@ export default function ForgotPassword() {
 
   return (
     <div>
-      <h1 className="font-display text-xl font-semibold text-text">Reset password</h1>
-      <p className="mt-1 text-sm text-text-secondary">
+      <h1 className="font-display text-xl font-semibold text-foreground">Reset password</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         Enter your email and we'll send you a link to reset your password.
       </p>
 
@@ -62,7 +62,7 @@ export default function ForgotPassword() {
           {...register('email')}
         />
         {formError && (
-          <p role="alert" className="text-sm text-error">
+          <p role="alert" className="text-sm text-destructive">
             {formError}
           </p>
         )}
@@ -71,8 +71,8 @@ export default function ForgotPassword() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-text-secondary">
-        <Link to={ROUTES.LOGIN} className="text-accent hover:underline">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        <Link to={ROUTES.LOGIN} className="text-primary hover:underline">
           Back to sign in
         </Link>
       </p>

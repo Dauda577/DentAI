@@ -33,8 +33,8 @@ export default function Login() {
 
   return (
     <div>
-      <h1 className="font-display text-xl font-semibold text-text">Sign in</h1>
-      <p className="mt-1 text-sm text-text-secondary">Access your DentAI clinical workspace.</p>
+      <h1 className="font-display text-xl font-semibold text-foreground">Sign in</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Access your DentAI clinical workspace.</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
         <Input
@@ -53,13 +53,13 @@ export default function Login() {
         />
 
         {formError && (
-          <p role="alert" className="text-sm text-error">
+          <p role="alert" className="text-sm text-destructive">
             {formError}
           </p>
         )}
 
         <div className="flex items-center justify-end">
-          <Link to={ROUTES.FORGOT_PASSWORD} className="text-xs text-accent hover:underline">
+          <Link to={ROUTES.FORGOT_PASSWORD} className="text-xs text-primary hover:underline">
             Forgot password?
           </Link>
         </div>
@@ -69,9 +69,9 @@ export default function Login() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-text-secondary">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         No account?{' '}
-        <Link to={ROUTES.REGISTER} className="text-accent hover:underline">
+        <Link to={ROUTES.REGISTER} className="text-primary hover:underline">
           Register
         </Link>
       </p>
