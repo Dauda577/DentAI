@@ -27,7 +27,7 @@ export default function ProfileSection({ profile, onSave, isSaving }) {
   return (
     <Card>
       <Card.Header>
-        <h3 className="text-sm font-medium text-text">Profile</h3>
+        <h3 className="text-sm font-medium text-foreground">Profile</h3>
       </Card.Header>
       <Card.Body>
         <form onSubmit={handleSubmit(onSave)} className="flex flex-col gap-4">

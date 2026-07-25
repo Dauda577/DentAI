@@ -7,7 +7,7 @@ export default function NotificationsSection({ preferences, onChange }) {
   return (
     <Card>
       <Card.Header>
-        <h3 className="text-sm font-medium text-text">Notifications</h3>
+        <h3 className="text-sm font-medium text-foreground">Notifications</h3>
       </Card.Header>
       <Card.Body className="flex flex-col divide-y divide-border">
         <div className="pb-3">

@@ -39,7 +39,7 @@ export default function PasswordSection({ onSave, isSaving }) {
   return (
     <Card>
       <Card.Header>
-        <h3 className="text-sm font-medium text-text">Password</h3>
+        <h3 className="text-sm font-medium text-foreground">Password</h3>
       </Card.Header>
       <Card.Body>
         <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
@@ -63,7 +63,7 @@ export default function PasswordSection({ onSave, isSaving }) {
               {...register('confirmPassword')}
             />
           </div>
-          {formError && <p className="text-sm text-error">{formError}</p>}
+          {formError && <p className="text-sm text-destructive">{formError}</p>}
           <div className="flex justify-end">
             <Button type="submit" isLoading={isSaving}>
               Update password
