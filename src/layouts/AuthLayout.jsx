@@ -9,7 +9,7 @@ export default function AuthLayout() {
         src={vectorIllustration}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40"
       />
 
       <div className="relative z-10 w-full max-w-sm">
