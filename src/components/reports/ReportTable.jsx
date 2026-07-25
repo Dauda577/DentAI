@@ -26,7 +26,7 @@ export default function ReportTable({ reports, loading, pagination, onView, onDo
               onView?.(row)
             }}
             aria-label="View report"
-            className="rounded-md p-1.5 text-text-secondary hover:bg-surface-hover hover:text-text"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-card-hover hover:text-foreground"
           >
             <Eye className="h-4 w-4" />
           </button>
@@ -36,7 +36,7 @@ export default function ReportTable({ reports, loading, pagination, onView, onDo
               onDownload?.(row)
             }}
             aria-label="Download report"
-            className="rounded-md p-1.5 text-text-secondary hover:bg-surface-hover hover:text-text"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-card-hover hover:text-foreground"
           >
             <Download className="h-4 w-4" />
           </button>

@@ -15,15 +15,15 @@ export default function ReportPreviewModal({ isOpen, onClose, report, loading })
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="font-display text-base font-medium text-text">{report.type}</h3>
-              <p className="mt-0.5 text-sm text-text-secondary">
+              <h3 className="font-display text-base font-medium text-foreground">{report.type}</h3>
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 {report.patientName} · {formatDate(report.date)}
               </p>
             </div>
             <Badge tone={STATUS_TONE[report.status] ?? 'neutral'}>{report.status}</Badge>
           </div>
-          <div className="rounded-lg border border-border bg-bg p-4">
-            <p className="text-sm text-text-secondary">{report.summary}</p>
+          <div className="rounded-lg border border-border bg-background p-4">
+            <p className="text-sm text-muted-foreground">{report.summary}</p>
           </div>
         </div>
       )}
