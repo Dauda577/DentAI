@@ -1,6 +1,6 @@
 const STATUS_DOT = {
   complete: 'bg-success',
-  active: 'bg-accent',
+  active: 'bg-primary',
   pending: 'bg-border',
 }
 
@@ -22,8 +22,8 @@ export default function Timeline({ items = [] }) {
           />
           <div className="min-w-0 flex-1 pb-1">
             <div className="flex flex-wrap items-baseline gap-x-2">
-              <p className="text-sm font-medium text-text">{item.title}</p>
-              {item.subtitle && <p className="text-xs text-text-secondary">{item.subtitle}</p>}
+              <p className="text-sm font-medium text-foreground">{item.title}</p>
+              {item.subtitle && <p className="text-xs text-muted-foreground">{item.subtitle}</p>}
             </div>
             {item.content && <div className="mt-1.5">{item.content}</div>}
           </div>

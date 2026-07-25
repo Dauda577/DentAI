@@ -14,7 +14,7 @@ export default function Breadcrumb() {
 
   return (
     <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm">
-      <Link to="/dashboard" className="text-text-secondary hover:text-text">
+      <Link to="/dashboard" className="text-muted-foreground hover:text-foreground">
         Home
       </Link>
       {segments.map((seg, i) => {
@@ -22,11 +22,11 @@ export default function Breadcrumb() {
         const isLast = i === segments.length - 1
         return (
           <span key={path} className="flex items-center gap-1.5">
-            <ChevronRight className="h-3.5 w-3.5 text-text-secondary" />
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
             {isLast ? (
-              <span className="font-medium text-text">{toLabel(seg)}</span>
+              <span className="font-medium text-foreground">{toLabel(seg)}</span>
             ) : (
-              <Link to={path} className="text-text-secondary hover:text-text">
+              <Link to={path} className="text-muted-foreground hover:text-foreground">
                 {toLabel(seg)}
               </Link>
             )}

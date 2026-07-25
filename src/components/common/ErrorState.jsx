@@ -10,10 +10,10 @@ export default function ErrorState({
   return (
     <Card>
       <Card.Body className="flex flex-col items-center gap-3 py-12 text-center">
-        <AlertTriangle className="h-8 w-8 text-error" />
+        <AlertTriangle className="h-8 w-8 text-destructive" />
         <div>
-          <p className="text-sm font-medium text-text">{title}</p>
-          <p className="mt-1 text-sm text-text-secondary">{message}</p>
+          <p className="text-sm font-medium text-foreground">{title}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{message}</p>
         </div>
         {onRetry && (
           <Button variant="secondary" size="sm" onClick={onRetry}>

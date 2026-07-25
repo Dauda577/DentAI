@@ -57,20 +57,20 @@ export default function FileUploader({
 
   if (file) {
     return (
-      <div className="rounded-lg border border-border bg-surface p-4">
+      <div className="rounded-lg border border-border bg-card p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/15">
             <FileIcon className="h-4.5 w-4.5 text-accent" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-text">{file.name}</p>
-            <p className="text-xs text-text-secondary">{formatFileSize(file.size)}</p>
+            <p className="truncate text-sm font-medium text-foreground">{file.name}</p>
+            <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
           </div>
           {uploadProgress === undefined && (
             <button
               onClick={removeFile}
               aria-label="Remove file"
-              className="text-text-secondary hover:text-error"
+              className="text-muted-foreground hover:text-destructive"
             >
               <X className="h-4 w-4" />
             </button>
@@ -98,11 +98,11 @@ export default function FileUploader({
         onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
         className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed
           px-6 py-10 text-center transition-colors
-          ${isDragging ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/50'}`}
+          ${isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
       >
-        <UploadCloud className="h-7 w-7 text-text-secondary" />
-        <p className="text-sm font-medium text-text">Drag and drop a file, or click to browse</p>
-        <p className="text-xs text-text-secondary">
+        <UploadCloud className="h-7 w-7 text-muted-foreground" />
+        <p className="text-sm font-medium text-foreground">Drag and drop a file, or click to browse</p>
+        <p className="text-xs text-muted-foreground">
           Supported formats: {accept.join(', ')}
           {maxSizeLabel ? ` · Max ${maxSizeLabel}` : ''}
         </p>
@@ -115,7 +115,7 @@ export default function FileUploader({
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
       </div>
-      {error && <p className="mt-2 text-xs text-error">{error}</p>}
+      {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
     </div>
   )
 }
