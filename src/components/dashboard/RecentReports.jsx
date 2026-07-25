@@ -16,8 +16,8 @@ export default function RecentReports() {
   return (
     <Card>
       <Card.Header className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-text">Recent reports</h3>
-        <button onClick={() => navigate(ROUTES.REPORTS)} className="text-xs text-accent hover:underline">
+        <h3 className="text-sm font-medium text-foreground">Recent reports</h3>
+        <button onClick={() => navigate(ROUTES.REPORTS)} className="text-xs text-primary hover:underline">
           View all
         </button>
       </Card.Header>
@@ -26,7 +26,7 @@ export default function RecentReports() {
           Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
 
         {!loading && (data?.items ?? []).length === 0 && (
-          <p className="text-sm text-text-secondary">No reports yet.</p>
+          <p className="text-sm text-muted-foreground">No reports yet.</p>
         )}
 
         {!loading &&
@@ -36,8 +36,8 @@ export default function RecentReports() {
                 <FileText className="h-4 w-4 text-accent" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-text">{report.type}</p>
-                <p className="text-xs text-text-secondary">
+                <p className="truncate text-sm font-medium text-foreground">{report.type}</p>
+                <p className="text-xs text-muted-foreground">
                   {report.patientName} · {formatDate(report.date)}
                 </p>
               </div>

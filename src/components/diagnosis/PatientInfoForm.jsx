@@ -6,7 +6,7 @@ export default function PatientInfoForm({ register, errors }) {
   return (
     <Card>
       <Card.Header>
-        <h3 className="text-sm font-medium text-text">SECTION A: PATIENT DEMOGRAPHICS</h3>
+        <h3 className="text-sm font-medium text-foreground">SECTION A: PATIENT DEMOGRAPHICS</h3>
       </Card.Header>
       <Card.Body className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Input
@@ -28,7 +28,8 @@ export default function PatientInfoForm({ register, errors }) {
           placeholder="Select sex"
           options={[
             { value: 'male', label: 'Male' },
-            { value: 'female', label: 'Female' }
+            { value: 'female', label: 'Female' },
+            { value: 'other', label: 'Other' },
           ]}
           error={errors.sex?.message}
           {...register('sex')}

@@ -7,7 +7,7 @@ export default function CBCTUploader({ onFileChange }) {
   return (
     <Card>
       <Card.Header>
-        <h3 className="text-sm font-medium text-text">SECTION C: CBCT UPLOAD</h3>
+        <h3 className="text-sm font-medium text-foreground">SECTION C: CBCT UPLOAD</h3>
       </Card.Header>
       <Card.Body>
         <FileUploader

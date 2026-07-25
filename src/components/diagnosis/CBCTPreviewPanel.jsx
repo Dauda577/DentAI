@@ -9,14 +9,14 @@ export default function CBCTPreviewPanel({ fileName }) {
   return (
     <Card>
       <Card.Header>
-        <h3 className="text-sm font-medium text-text">CBCT preview</h3>
+        <h3 className="text-sm font-medium text-foreground">CBCT preview</h3>
       </Card.Header>
       <Card.Body>
-        <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border bg-bg py-16 text-center">
-          <ScanFace className="h-8 w-8 text-text-secondary" />
+        <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border bg-background py-16 text-center">
+          <ScanFace className="h-8 w-8 text-muted-foreground" />
           <div>
-            <p className="text-sm font-medium text-text">Scan viewer coming soon</p>
-            <p className="mt-1 text-xs text-text-secondary">
+            <p className="text-sm font-medium text-foreground">Scan viewer coming soon</p>
+            <p className="mt-1 text-xs text-muted-foreground">
               {fileName ? `${fileName} — ` : ''}This panel is ready for a DICOM/NIfTI viewer integration.
             </p>
           </div>

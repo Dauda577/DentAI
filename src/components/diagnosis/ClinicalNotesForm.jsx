@@ -5,7 +5,7 @@ export default function ClinicalNotesForm({ register, errors }) {
   return (
     <Card>
       <Card.Header>
-        <h3 className="text-sm font-medium text-text">SECTION B: CLINICAL NOTES</h3>
+        <h3 className="text-sm font-medium text-foreground">SECTION B: CLINICAL NOTES</h3>
       </Card.Header>
       <Card.Body className="flex flex-col gap-4">
         <Textarea

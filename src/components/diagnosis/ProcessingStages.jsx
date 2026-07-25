@@ -16,7 +16,7 @@ export default function ProcessingStages({ currentStage, progress = 0 }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <ProgressBar value={progress} showLabel tone="accent" />
+      <ProgressBar value={progress} showLabel tone="primary" />
 
       <ol className="flex flex-col gap-3">
         {STAGE_ORDER.map((stage, i) => {
@@ -30,16 +30,16 @@ export default function ProcessingStages({ currentStage, progress = 0 }) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
               className={`flex items-center gap-3 rounded-lg border px-4 py-3 transition-colors
-                ${isActive ? 'border-accent/40 bg-accent/5' : 'border-border'}`}
+                ${isActive ? 'border-primary/40 bg-primary/5' : 'border-border'}`}
             >
               {isDone ? (
                 <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-success" />
               ) : isActive ? (
-                <Loader2 className="h-4.5 w-4.5 shrink-0 animate-spin text-accent" />
+                <Loader2 className="h-4.5 w-4.5 shrink-0 animate-spin text-primary" />
               ) : (
                 <span className="h-4.5 w-4.5 shrink-0 rounded-full border-2 border-border" />
               )}
-              <span className={`text-sm ${isActive ? 'font-medium text-text' : 'text-text-secondary'}`}>
+              <span className={`text-sm ${isActive ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
                 {DIAGNOSIS_STAGE_LABEL[stage]}
               </span>
             </motion.li>

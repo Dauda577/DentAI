@@ -8,7 +8,7 @@ export default function ConfidenceBar({ value }) {
   return (
     <div className="flex items-center gap-2">
       <ProgressBar value={value * 100} tone={TONE_BY_LEVEL[level]} className="w-28" />
-      <span className="text-xs tabular-nums text-text-secondary">{Math.round(value * 100)}%</span>
+      <span className="text-xs tabular-nums text-muted-foreground">{Math.round(value * 100)}%</span>
     </div>
   )
 }
