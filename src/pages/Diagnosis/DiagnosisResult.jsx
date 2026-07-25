@@ -61,7 +61,7 @@ export default function DiagnosisResult() {
 
         <Card>
           <Card.Header>
-            <h3 className="text-sm font-medium text-text">Disease results</h3>
+            <h3 className="text-sm font-medium text-foreground">Disease results</h3>
           </Card.Header>
           <Card.Body className="px-0 py-0">
             <div className="px-5 py-2">

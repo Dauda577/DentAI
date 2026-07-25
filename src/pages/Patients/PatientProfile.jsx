@@ -57,23 +57,23 @@ export default function PatientProfile() {
           <Card.Body className="flex flex-col items-center gap-3 text-center">
             <Avatar name={patient.name} size="lg" />
             <div>
-              <h2 className="font-display text-base font-medium text-text">{patient.name}</h2>
-              <p className="text-sm text-text-secondary capitalize">
+              <h2 className="font-display text-base font-medium text-foreground">{patient.name}</h2>
+              <p className="text-sm text-muted-foreground capitalize">
                 {patient.age} years · {patient.sex}
               </p>
             </div>
             <div className="mt-2 w-full space-y-2 border-t border-border pt-4 text-left text-sm">
               <div className="flex justify-between">
-                <span className="text-text-secondary">Phone</span>
-                <span className="text-text">{patient.phone || '—'}</span>
+                <span className="text-muted-foreground">Phone</span>
+                <span className="text-foreground">{patient.phone || '—'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-secondary">Last visit</span>
-                <span className="text-text">{formatDate(patient.lastVisit)}</span>
+                <span className="text-muted-foreground">Last visit</span>
+                <span className="text-foreground">{formatDate(patient.lastVisit)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-secondary">Diagnoses</span>
-                <span className="text-text">{patient.diagnosesCount}</span>
+                <span className="text-muted-foreground">Diagnoses</span>
+                <span className="text-foreground">{patient.diagnosesCount}</span>
               </div>
             </div>
           </Card.Body>
@@ -82,7 +82,7 @@ export default function PatientProfile() {
         <div className="flex flex-col gap-6 lg:col-span-2">
           <Card>
             <Card.Header>
-              <h3 className="text-sm font-medium text-text">Timeline of visits</h3>
+              <h3 className="text-sm font-medium text-foreground">Timeline of visits</h3>
             </Card.Header>
             <Card.Body>
               <PatientTimeline visits={MOCK_VISITS} />
@@ -91,10 +91,10 @@ export default function PatientProfile() {
 
           <Card>
             <Card.Header>
-              <h3 className="text-sm font-medium text-text">Clinical notes</h3>
+              <h3 className="text-sm font-medium text-foreground">Clinical notes</h3>
             </Card.Header>
             <Card.Body>
-              <p className="text-sm text-text-secondary">
+              <p className="text-sm text-muted-foreground">
                 Clinical notes from past visits will render here once linked to diagnosis sessions.
               </p>
             </Card.Body>
@@ -102,10 +102,10 @@ export default function PatientProfile() {
 
           <Card>
             <Card.Header>
-              <h3 className="text-sm font-medium text-text">Reports & downloads</h3>
+              <h3 className="text-sm font-medium text-foreground">Reports & downloads</h3>
             </Card.Header>
             <Card.Body>
-              <p className="text-sm text-text-secondary">
+              <p className="text-sm text-muted-foreground">
                 Reports generated for this patient will be listed here, filtered from the Reports service.
               </p>
             </Card.Body>

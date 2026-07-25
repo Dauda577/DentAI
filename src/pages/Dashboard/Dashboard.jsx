@@ -48,7 +48,7 @@ export default function Dashboard() {
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <Card.Header>
-            <h3 className="text-sm font-medium text-text">Recent diagnoses</h3>
+            <h3 className="text-sm font-medium text-foreground">Recent diagnoses</h3>
           </Card.Header>
           <Card.Body className="px-0 py-0">
             {diagnosesError ? (

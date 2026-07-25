@@ -48,7 +48,7 @@ export default function TreatmentPlan() {
       <div className="flex flex-col gap-6">
         <Card>
           <Card.Header>
-            <h3 className="text-sm font-medium text-text">Treatment timeline</h3>
+            <h3 className="text-sm font-medium text-foreground">Treatment timeline</h3>
           </Card.Header>
           <Card.Body>
             <TreatmentTimeline phases={plan.phases} />
@@ -57,7 +57,7 @@ export default function TreatmentPlan() {
 
         <Card>
           <Card.Header>
-            <h3 className="text-sm font-medium text-text">Clinician notes</h3>
+            <h3 className="text-sm font-medium text-foreground">Clinician notes</h3>
           </Card.Header>
           <Card.Body>
             <Textarea placeholder="Add any notes about this treatment plan…" rows={4} />
