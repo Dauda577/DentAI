@@ -21,7 +21,7 @@ export default function PatientTable({
       render: (row) => (
         <div className="flex items-center gap-3">
           <Avatar name={row.name} size="sm" />
-          <span className="font-medium text-text">{row.name}</span>
+          <span className="font-medium text-foreground">{row.name}</span>
         </div>
       ),
     },
@@ -41,7 +41,7 @@ export default function PatientTable({
               onEdit?.(row)
             }}
             aria-label="Edit patient"
-            className="rounded-md p-1.5 text-text-secondary hover:bg-surface-hover hover:text-text"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-card-hover hover:text-foreground"
           >
             <Pencil className="h-4 w-4" />
           </button>
@@ -51,7 +51,7 @@ export default function PatientTable({
               onDelete?.(row)
             }}
             aria-label="Delete patient"
-            className="rounded-md p-1.5 text-text-secondary hover:bg-surface-hover hover:text-error"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-card-hover hover:text-destructive"
           >
             <Trash2 className="h-4 w-4" />
           </button>
