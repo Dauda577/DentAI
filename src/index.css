@@ -35,7 +35,7 @@
     color-scheme: light;
     /* Bumps the base from 16px to ~17.5px — every text-sm/base/lg/etc.
        utility is rem-based, so this scales all text proportionally. */
-    font-size: 109.375%;
+    font-size: 140.375%;
   }
   body {
     background-color: var(--color-background);
