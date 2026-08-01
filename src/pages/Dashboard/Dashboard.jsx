@@ -66,7 +66,7 @@ export default function Dashboard() {
                   loading={diagnosesLoading}
                   pagination={
                     recentDiagnoses
-                      ? { page: recentDiagnoses.page, pageCount: recentDiagnoses.pageCount, onPageChange: setPage }
+                      ? { page: RecentDiagnoses.page, pageCount: recentDiagnoses.pageCount, onPageChange: setPage }
                       : undefined
                   }
                 />
