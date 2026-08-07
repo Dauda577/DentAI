@@ -15,6 +15,11 @@ const STAGE_ORDER = [
 const STAGE_DURATION_MS = 1400
 const mockSessions = new Map()
 
+// These four match the real model's actual output classes (confirmed from
+// treatment_kb.csv) and their real per-class decision thresholds (from
+// thresholds.npy), rather than placeholder disease names. Threshold order
+// is an alphabetical assumption on the class names — unconfirmed against
+// the real inference service.
 function buildMockResult(session) {
   return {
     sessionId: session.id,
@@ -27,10 +32,10 @@ function buildMockResult(session) {
     },
     clinicalNotes: session.clinicalNotes,
     diseases: [
-      { name: 'Dental Caries', confidence: 0.91, status: 'Detected' },
-      { name: 'Periapical Lesion', confidence: 0.68, status: 'Detected' },
-      { name: 'Periodontal Bone Loss', confidence: 0.52, status: 'Possible' },
-      { name: 'Impacted Tooth', confidence: 0.24, status: 'Unlikely' },
+      { name: 'Caries', confidence: 0.86, status: 'Detected' },
+      { name: 'Damaged / Missing Tooth', confidence: 0.71, status: 'Detected' },
+      { name: 'Pulpitis', confidence: 0.58, status: 'Possible' },
+      { name: 'Impacted Tooth', confidence: 0.19, status: 'Unlikely' },
     ],
   }
 }
