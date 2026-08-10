@@ -3,10 +3,15 @@ import { ROUTES } from '@/constants/routes'
 import { supabase } from '@/lib/supabaseClient'
 import { storage } from '@/utils/storage'
 
-// These are intentionally independent: you can have real Supabase auth
-// working while the rest of the app (patients, diagnoses, reports, etc.)
-// still runs on mocks until the FastAPI backend exists, or vice versa.
+// Three independent flags, deliberately not tied together:
+// - USE_MOCKS: patients/reports/dashboard/settings — no real backend for
+//   these exists yet, keep this true until one does.
+// - USE_MOCKS_DIAGNOSIS: diagnosis/treatment specifically — the Python
+//   inference service only ever implements these two, so this is the one
+//   flag that actually has a real backend to turn off mocks for.
+// - USE_SUPABASE_AUTH: auth — independent of both, Supabase handles this.
 export const USE_MOCKS = String(import.meta.env.VITE_USE_MOCKS ?? 'true') === 'true'
+export const USE_MOCKS_DIAGNOSIS = String(import.meta.env.VITE_USE_MOCKS_DIAGNOSIS ?? 'true') === 'true'
 export const USE_SUPABASE_AUTH = String(import.meta.env.VITE_USE_SUPABASE_AUTH ?? 'false') === 'true'
 
 const apiClient = axios.create({
@@ -14,8 +19,6 @@ const apiClient = axios.create({
   timeout: 30000,
 })
 
-// Resource APIs (patients, diagnoses, etc.) authenticate to the FastAPI
-// backend with the same Supabase-issued JWT, when Supabase auth is active.
 apiClient.interceptors.request.use(async (config) => {
   if (USE_SUPABASE_AUTH) {
     const {

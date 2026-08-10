@@ -1,9 +1,9 @@
-import apiClient, { USE_MOCKS } from './apiClient'
+import apiClient, { USE_MOCKS_DIAGNOSIS } from './apiClient'
 import { mockDelay } from './mockHelpers'
 
 export const treatmentApi = {
   async generate(sessionId) {
-    if (USE_MOCKS) {
+    if (USE_MOCKS_DIAGNOSIS) {
       return mockDelay({
         sessionId,
         phases: [

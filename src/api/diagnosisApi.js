@@ -1,10 +1,10 @@
-import apiClient, { USE_MOCKS } from './apiClient'
+import apiClient, { USE_MOCKS_DIAGNOSIS } from './apiClient'
 import { mockDelay } from './mockHelpers'
 import { DIAGNOSIS_STAGE } from '@/constants/status'
 
 // --- Mock session store -----------------------------------------------
 // Keyed by sessionId, so Processing can poll and watch a session progress
-// through stages purely client-side until a real backend exists.
+// through stages purely client-side under mocks.
 const STAGE_ORDER = [
   DIAGNOSIS_STAGE.UPLOADING,
   DIAGNOSIS_STAGE.PREPARING,
@@ -15,11 +15,6 @@ const STAGE_ORDER = [
 const STAGE_DURATION_MS = 1400
 const mockSessions = new Map()
 
-// These four match the real model's actual output classes (confirmed from
-// treatment_kb.csv) and their real per-class decision thresholds (from
-// thresholds.npy), rather than placeholder disease names. Threshold order
-// is an alphabetical assumption on the class names — unconfirmed against
-// the real inference service.
 function buildMockResult(session) {
   return {
     sessionId: session.id,
@@ -42,7 +37,7 @@ function buildMockResult(session) {
 
 export const diagnosisApi = {
   async submit({ patientInfo, clinicalNotes, cbctFile }) {
-    if (USE_MOCKS) {
+    if (USE_MOCKS_DIAGNOSIS) {
       const id = `sess_${Date.now()}`
       mockSessions.set(id, {
         id,
@@ -64,7 +59,7 @@ export const diagnosisApi = {
   },
 
   async getStatus(sessionId) {
-    if (USE_MOCKS) {
+    if (USE_MOCKS_DIAGNOSIS) {
       const session = mockSessions.get(sessionId)
       if (!session) {
         const err = new Error('Session not found')
@@ -87,7 +82,7 @@ export const diagnosisApi = {
   },
 
   async getResult(sessionId) {
-    if (USE_MOCKS) {
+    if (USE_MOCKS_DIAGNOSIS) {
       const session = mockSessions.get(sessionId)
       if (!session) {
         const err = new Error('Session not found')
