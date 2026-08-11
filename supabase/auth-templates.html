@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f8fafc">
+<div style="max-width:600px;margin:0 auto;padding:40px 24px">
+  <div style="background:linear-gradient(135deg,#0f766e,#115e59);padding:28px 32px;border-radius:12px 12px 0 0">
+    <h1 style="margin:0;color:#fff;font-size:22px;font-family:system-ui,-apple-system,sans-serif">🦷 DentAI</h1>
+  </div>
+  <div style="background:#fff;padding:32px 32px 16px;border-radius:0 0 12px 12px;font-family:system-ui,-apple-system,sans-serif;color:#0f172a">
+    <h2 style="margin:0 0 8px;font-size:18px">{{ .Title }}</h2>
+    <p style="margin:0 0 24px;color:#64748b;font-size:14px;line-height:1.6">{{ .Message }}</p>
+    {{ if .Link }}<a href="{{ .Link }}" style="display:inline-block;background-color:#0f766e;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">{{ .Action }}</a>{{ end }}
+    <p style="margin:28px 0 0;padding-top:16px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:12px">{{ .Bottom }}</p>
+  </div>
+</div>
+</body>
+</html>

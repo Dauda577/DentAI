@@ -15,11 +15,11 @@ create extension if not exists supabase_vault;
 
 -- Store credentials in Vault (idempotent by name).
 select vault.create_secret(
-  'https://<project-ref>.supabase.co/functions/v1/send-weekly-digest',
+  'https://ozjuiwzgoysxpicmelit.supabase.co/functions/v1/send-weekly-digest',
   'digest_function_url'
 );
 select vault.create_secret(
-  '<service_role_key>',
+  '<PASTE_YOUR_SERVICE_ROLE_KEY_HERE>',  -- Project Settings → API → service_role
   'digest_service_role_key'
 );
 
