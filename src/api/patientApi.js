@@ -1,96 +1,92 @@
-import apiClient, { USE_MOCKS } from './apiClient'
-import { mockDelay } from './mockHelpers'
+import { supabase } from '@/lib/supabaseClient'
 
-const MOCK_PATIENTS = [
-  { id: 'pat_1', name: 'Ama Boateng', age: 34, sex: 'female', phone: '+233 24 111 2222', lastVisit: '2026-06-18', diagnosesCount: 3 },
-  { id: 'pat_2', name: 'Kwame Owusu', age: 51, sex: 'male', phone: '+233 20 333 4444', lastVisit: '2026-07-02', diagnosesCount: 1 },
-  { id: 'pat_3', name: 'Efua Mensah', age: 27, sex: 'female', phone: '+233 27 555 6666', lastVisit: '2026-05-29', diagnosesCount: 5 },
-  { id: 'pat_4', name: 'Yaw Darko', age: 42, sex: 'male', phone: '+233 55 777 8888', lastVisit: '2026-07-10', diagnosesCount: 2 },
-  { id: 'pat_5', name: 'Abena Asante', age: 19, sex: 'female', phone: '+233 26 999 0000', lastVisit: '2026-06-30', diagnosesCount: 1 },
-  { id: 'pat_6', name: 'Kofi Appiah', age: 63, sex: 'male', phone: '+233 24 121 3131', lastVisit: '2026-04-15', diagnosesCount: 4 },
-  { id: 'pat_7', name: 'Adjoa Frimpong', age: 8, sex: 'female', phone: '+233 20 141 5151', lastVisit: '2026-07-05', diagnosesCount: 1 },
-  { id: 'pat_8', name: 'Kwabena Antwi', age: 71, sex: 'male', phone: '+233 27 161 7171', lastVisit: '2026-03-22', diagnosesCount: 6 },
-]
+const SELECT_WITH_COUNTS = 'id, name, age, sex, phone, created_at, sessions:diagnosis_sessions(count)'
+const SORTABLE_KEYS = ['name', 'age', 'created_at']
 
-function applyListParams(patients, { search = '', sort, page = 1, pageSize = 5 } = {}) {
-  let filtered = patients
-  if (search) {
-    const q = search.toLowerCase()
-    filtered = filtered.filter((p) => p.name.toLowerCase().includes(q))
-  }
-  if (sort?.key) {
-    filtered = [...filtered].sort((a, b) => {
-      const dir = sort.direction === 'desc' ? -1 : 1
-      if (a[sort.key] < b[sort.key]) return -1 * dir
-      if (a[sort.key] > b[sort.key]) return 1 * dir
-      return 0
-    })
-  }
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
-  const start = (page - 1) * pageSize
+function mapPatient(row) {
   return {
-    items: filtered.slice(start, start + pageSize),
-    page,
-    pageCount,
-    total: filtered.length,
+    id: row.id,
+    name: row.name,
+    age: row.age,
+    sex: row.sex,
+    phone: row.phone ?? '',
+    lastVisit: row.created_at,
+    diagnosesCount: row.sessions?.[0]?.count ?? 0,
   }
 }
 
+function ensureSingle(data) {
+  if (!data || data.length === 0) {
+    const err = new Error('Patient not found')
+    err.code = 'NOT_FOUND'
+    throw err
+  }
+  return data[0]
+}
+
 export const patientApi = {
-  async list(params) {
-    if (USE_MOCKS) {
-      return mockDelay(applyListParams(MOCK_PATIENTS, params), 350)
+  async list({ search = '', sort, page = 1, pageSize = 5 } = {}) {
+    let query = supabase
+      .from('patients')
+      .select(SELECT_WITH_COUNTS, { count: 'exact' })
+      .order('created_at', { ascending: false })
+
+    if (search) {
+      query = query.ilike('name', `%${search}%`)
     }
-    const { data } = await apiClient.get('/patients', { params })
-    return data
+    if (sort?.key && SORTABLE_KEYS.includes(sort.key)) {
+      query = query.order(sort.key, { ascending: sort.direction !== 'desc' })
+    }
+    query = query.range((page - 1) * pageSize, page * pageSize - 1)
+
+    const { data, count, error } = await query
+    if (error) throw error
+
+    return {
+      items: (data ?? []).map(mapPatient),
+      page,
+      pageCount: Math.max(1, Math.ceil((count ?? 0) / pageSize)),
+      total: count ?? 0,
+    }
   },
 
   async get(id) {
-    if (USE_MOCKS) {
-      const patient = MOCK_PATIENTS.find((p) => p.id === id)
-      if (!patient) {
-        const err = new Error('Patient not found')
-        err.code = 'NOT_FOUND'
-        throw err
-      }
-      return mockDelay(patient, 300)
-    }
-    const { data } = await apiClient.get(`/patients/${id}`)
-    return data
+    const { data, error } = await supabase
+      .from('patients')
+      .select(SELECT_WITH_COUNTS)
+      .eq('id', id)
+      .limit(1)
+    if (error) throw error
+    return mapPatient(ensureSingle(data))
   },
 
   async create(payload) {
-    if (USE_MOCKS) {
-      const newPatient = { id: `pat_${Date.now()}`, diagnosesCount: 0, lastVisit: null, ...payload }
-      MOCK_PATIENTS.unshift(newPatient)
-      return mockDelay(newPatient, 350)
-    }
-    const { data } = await apiClient.post('/patients', payload)
-    return data
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    const { data, error } = await supabase
+      .from('patients')
+      .insert({ user_id: user?.id, ...payload })
+      .select('id, name, age, sex, phone, created_at')
+      .single()
+    if (error) throw error
+    return { ...data, lastVisit: null, diagnosesCount: 0 }
   },
 
   async update(id, payload) {
-    if (USE_MOCKS) {
-      const index = MOCK_PATIENTS.findIndex((p) => p.id === id)
-      if (index === -1) {
-        const err = new Error('Patient not found')
-        err.code = 'NOT_FOUND'
-        throw err
-      }
-      MOCK_PATIENTS[index] = { ...MOCK_PATIENTS[index], ...payload }
-      return mockDelay(MOCK_PATIENTS[index], 350)
-    }
-    const { data } = await apiClient.put(`/patients/${id}`, payload)
-    return data
+    const { data, error } = await supabase
+      .from('patients')
+      .update(payload)
+      .eq('id', id)
+      .select(SELECT_WITH_COUNTS)
+      .limit(1)
+    if (error) throw error
+    return mapPatient(ensureSingle(data))
   },
 
   async remove(id) {
-    if (USE_MOCKS) {
-      const index = MOCK_PATIENTS.findIndex((p) => p.id === id)
-      if (index !== -1) MOCK_PATIENTS.splice(index, 1)
-      return mockDelay({ success: true }, 300)
-    }
-    const { data } = await apiClient.delete(`/patients/${id}`)
-    return data
+    const { error } = await supabase.from('patients').delete().eq('id', id)
+    if (error) throw error
+    return { success: true }
   },
 }

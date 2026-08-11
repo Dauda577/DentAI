@@ -1,72 +1,139 @@
-import apiClient, { USE_MOCKS } from './apiClient'
-import { mockDelay } from './mockHelpers'
+import { supabase } from '@/lib/supabaseClient'
 
-let MOCK_PROFILE = {
-  name: 'Dr. Demo',
-  email: 'demo@dentai.app',
-  clinicName: 'DentAI Clinic',
-  role: 'Dentist',
-}
-
-let MOCK_NOTIFICATIONS = {
+const DEFAULT_NOTIFICATIONS = {
   emailAlerts: true,
   smsAlerts: false,
   weeklySummary: true,
 }
 
-const MOCK_SYSTEM_INFO = {
-  version: '1.0.0',
-  environment: 'Mock / Development',
-  lastUpdated: '2026-07-01',
+function mapNotifications(row) {
+  return {
+    emailAlerts: row.email_alerts ?? true,
+    smsAlerts: row.sms_alerts ?? false,
+    weeklySummary: row.weekly_summary ?? true,
+  }
 }
 
 export const settingsApi = {
   async getProfile() {
-    if (USE_MOCKS) return mockDelay(MOCK_PROFILE, 300)
-    const { data } = await apiClient.get('/settings/profile')
-    return data
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('name, email, role, clinic_name')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (error) throw error
+
+    return {
+      name: data?.name ?? user?.email ?? '',
+      email: data?.email ?? user?.email ?? '',
+      clinicName: data?.clinic_name ?? '',
+      role: data?.role ?? 'dentist',
+    }
   },
 
   async updateProfile(payload) {
-    if (USE_MOCKS) {
-      MOCK_PROFILE = { ...MOCK_PROFILE, ...payload }
-      return mockDelay(MOCK_PROFILE, 400)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    const newEmail = payload.email && payload.email !== user.email ? payload.email : null
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert(
+        {
+          id: user.id,
+          email: newEmail ?? user.email,
+          ...(payload.name != null ? { name: payload.name } : {}),
+          ...(payload.clinicName != null ? { clinic_name: payload.clinicName } : {}),
+        },
+        { onConflict: 'id' }
+      )
+      .select('name, email, role, clinic_name')
+      .single()
+    if (error) throw error
+
+    let emailChanged = false
+    if (newEmail) {
+      const { error: emailError } = await supabase.auth.updateUser({ email: newEmail })
+      if (emailError) throw emailError
+      emailChanged = true
     }
-    const { data } = await apiClient.put('/settings/profile', payload)
-    return data
+
+    return {
+      name: data.name,
+      email: data.email,
+      clinicName: data.clinic_name,
+      role: data.role,
+      emailChanged,
+    }
   },
 
-  async updatePassword(payload) {
-    if (USE_MOCKS) {
-      if (payload.currentPassword !== 'password') {
-        const err = new Error('Current password is incorrect')
-        err.code = 'INVALID_PASSWORD'
-        throw err
-      }
-      return mockDelay({ success: true }, 400)
+  async updatePassword({ currentPassword, newPassword }) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    })
+    if (signInError) {
+      const err = new Error('Current password is incorrect')
+      err.code = 'INVALID_PASSWORD'
+      throw err
     }
-    const { data } = await apiClient.put('/settings/password', payload)
-    return data
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) throw error
+    return { success: true }
   },
 
   async getNotificationPreferences() {
-    if (USE_MOCKS) return mockDelay(MOCK_NOTIFICATIONS, 250)
-    const { data } = await apiClient.get('/settings/notifications')
-    return data
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    const { data, error } = await supabase
+      .from('notification_prefs')
+      .select('email_alerts, sms_alerts, weekly_summary')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (error) throw error
+    return data ? mapNotifications(data) : DEFAULT_NOTIFICATIONS
   },
 
   async updateNotificationPreferences(payload) {
-    if (USE_MOCKS) {
-      MOCK_NOTIFICATIONS = { ...MOCK_NOTIFICATIONS, ...payload }
-      return mockDelay(MOCK_NOTIFICATIONS, 300)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    const { error } = await supabase
+      .from('notification_prefs')
+      .upsert(
+        {
+          user_id: user.id,
+          email_alerts: payload.emailAlerts,
+          sms_alerts: payload.smsAlerts,
+          weekly_summary: payload.weeklySummary,
+        },
+        { onConflict: 'user_id' }
+      )
+    if (error) throw error
+
+    return {
+      emailAlerts: payload.emailAlerts,
+      smsAlerts: payload.smsAlerts,
+      weeklySummary: payload.weeklySummary,
     }
-    const { data } = await apiClient.put('/settings/notifications', payload)
-    return data
   },
 
   async getSystemInfo() {
-    if (USE_MOCKS) return mockDelay(MOCK_SYSTEM_INFO, 200)
-    const { data } = await apiClient.get('/settings/system-info')
-    return data
+    return {
+      version: '1.0.0',
+      environment: import.meta.env.PROD ? 'Production' : 'Development',
+      lastUpdated: '2026-07-01',
+    }
   },
 }

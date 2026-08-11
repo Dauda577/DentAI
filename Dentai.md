@@ -6,9 +6,9 @@ A record of everything built so far: what exists, how it's organized, and what's
 
 ## 1. What DentAI is
 
-A Clinical Decision Support System (CDSS) frontend for dentists. It's frontend-only by design — no AI/ML logic lives here. It authenticates users, collects patient data and CBCT scans, and renders diagnosis/treatment results returned by an external FastAPI backend. Every screen is currently backed by a realistic mock layer so the app is fully clickable end-to-end before that backend exists.
+A Clinical Decision Support System (CDSS) frontend for dentists. No AI/ML logic lives in the frontend — it authenticates users, collects patient data and CBCT scans, and renders diagnosis/treatment results. Supabase (PostgREST + Storage + Auth) is the entire backend: the frontend talks to it directly via `supabase-js` and deploys to Vercel as static files only. Diagnosis inference is stubbed in the database (deterministic stage progression from `created_at`, then a persisted mock result) until a real inference service is plugged in.
 
-**Stack:** React, Vite, Tailwind CSS v4, React Router, Framer Motion, React Hook Form + Zod, Axios, Lucide React, Context API.
+**Stack:** React, Vite, Tailwind CSS v4, React Router, Framer Motion, React Hook Form + Zod, @supabase/supabase-js, Lucide React, Context API.
 
 **Design:** dark clinical theme — background `#111827`, surface `#1F2937`, teal accent `#14B8A6`, Poppins for headings / Inter for body — matching the original brief exactly, wired as Tailwind v4 `@theme` tokens.
 
@@ -52,7 +52,7 @@ Reusable `ErrorState` (title, message, retry button) and a top-level `ErrorBound
 
 ```
 src/
-├── api/                     apiClient, mockHelpers, authApi, patientApi, diagnosisApi,
+├── api/                     supabaseClient, authApi, patientApi, diagnosisApi,
 │                             treatmentApi, reportApi, dashboardApi, settingsApi
 ├── services/                 AuthService, PatientService, DiagnosisService, TreatmentService,
 │                             ReportService, DashboardService, SettingsService
@@ -93,21 +93,23 @@ Every file above exists and the project builds clean (`npm run build`) as of thi
 
 ---
 
-## 4. How the mock layer works
+## 4. How data flows now
 
-Every `api/*.js` file exports functions with the **real intended signature**. Internally, each checks `VITE_USE_MOCKS` (from `.env`) and either:
-- returns realistic mock data (with artificial latency via `mockDelay`, so loading states are actually exercised), or
-- makes the real `apiClient` call.
+Every `api/*.js` file calls Supabase directly with `supabase-js` (PostgREST + Storage + Auth). `services/` and everything above them (hooks, components, pages) are unchanged — they call the same service contracts as before. The FastAPI backend, `apiClient` (axios), and the entire mock layer (`mockHelpers`, `VITE_USE_MOCKS` / `VITE_API_BASE_URL`) have been removed.
 
-This means `services/` and everything above them (hooks, components, pages) were written once, against the final contract. **Flipping `VITE_USE_MOCKS=false` and pointing `VITE_API_BASE_URL` at the real FastAPI backend requires zero component changes** — only the `api/*.js` files' real-call branches need to match the actual backend response shapes.
+- **Auth** — Supabase Auth; `authApi` maps the auth user (+ optional `profiles` row) to `{ id, name, email, role, clinicName }`.
+- **Patients / Reports / Dashboard / Settings** — direct table queries with RLS scoping rows to `user_id`.
+- **Diagnosis** — `diagnosisApi.submit` inserts a `diagnosis_sessions` row (snapshotting patient name/age/sex/weight), uploads the CBCT to the private `cbct-scans` bucket under `{user_id}/{session_id}/{filename}`, then `getStatus` derives the stage/progress deterministically from `created_at` elapsed time. On the first poll that reaches complete it lazily persists `stage='complete'` + mock `diseases`. A real inference service can later write `stage`/`diseases` directly and the UI will read them as-is.
+- **Treatment** — `treatmentApi.generate` persists a stub plan once per session (idempotent).
 
-The diagnosis flow's mock is stateful: submitting a New Diagnosis form creates an in-memory session that progresses through processing stages based on elapsed time, so Processing's polling behavior is genuinely exercised rather than faked with a timeout.
+Schema lives in `dentai-supabase-setup.sql` (helpers) and `dentai-supabase-data-migration.sql` (tables, RLS, storage bucket, triggers).
 
 ---
 
 ## 5. Known gaps / deliberately deferred
 
-- **Real backend connection** — needs your FastAPI service to exist; the seam is ready (see §4).
+- **Real inference backend** — diagnosis results are stubbed (deterministic stage progression + persisted mock `diseases`). The seam is ready: a Supabase Edge Function or external service writes `stage`/`diseases` on the `diagnosis_sessions` row and the UI reads it as-is.
+- **Run the data migration** — `dentai-supabase-data-migration.sql` must be applied to the project via the SQL Editor before any table is usable.
 - **CBCT viewer** — `CBCTPreviewPanel` is a placeholder shaped for a real DICOM/NIfTI viewer library; not integrated yet, since that's a meaningful dependency choice best made once real scan data is available.
 - **`src/types/`** — the architecture plan called for JSDoc typedefs documenting each API contract (patient, diagnosis, treatment, report, user); not yet created.
 - **Automated tests** — no test suite yet (Vitest would be the natural fit given the Vite setup).
@@ -124,8 +126,8 @@ npm install
 npm run dev
 ```
 
-Log in with any non-empty email/password (mocks accept anything). `.env` controls mock mode:
+Log in with a real Supabase account created in the project's Auth dashboard. `.env`:
 ```
-VITE_USE_MOCKS=true
-VITE_API_BASE_URL=/api
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-public-key
 ```

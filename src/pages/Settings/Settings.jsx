@@ -13,11 +13,20 @@ export default function Settings() {
   const toast = useToast()
 
   const fetchProfile = useCallback(() => SettingsService.getProfile(), [])
-  const { data: profile, refetch: refetchProfile } = useApi(fetchProfile)
+  const {
+    data: profile,
+    loading: profileLoading,
+    error: profileError,
+    refetch: refetchProfile,
+  } = useApi(fetchProfile)
   const [isSavingProfile, setIsSavingProfile] = useState(false)
 
   const fetchNotifications = useCallback(() => SettingsService.getNotificationPreferences(), [])
-  const { data: notifications, refetch: refetchNotifications } = useApi(fetchNotifications)
+  const {
+    data: notifications,
+    loading: notificationsLoading,
+    refetch: refetchNotifications,
+  } = useApi(fetchNotifications)
 
   const fetchSystemInfo = useCallback(() => SettingsService.getSystemInfo(), [])
   const { data: systemInfo, loading: systemInfoLoading } = useApi(fetchSystemInfo)
@@ -27,8 +36,12 @@ export default function Settings() {
   const handleSaveProfile = async (values) => {
     setIsSavingProfile(true)
     try {
-      await SettingsService.updateProfile(values)
-      toast.success('Profile updated.')
+      const result = await SettingsService.updateProfile(values)
+      if (result?.emailChanged) {
+        toast.success('Profile updated. Check your inbox to confirm your new email.')
+      } else {
+        toast.success('Profile updated.')
+      }
       refetchProfile()
     } catch (err) {
       toast.error(err.message || 'Unable to update profile.')
@@ -61,9 +74,20 @@ export default function Settings() {
       <PageHeader title="Settings" description="Profile, password, notifications, theme, and system info." />
 
       <div className="flex flex-col gap-6">
-        <ProfileSection profile={profile} onSave={handleSaveProfile} isSaving={isSavingProfile} />
+        <ProfileSection
+          profile={profile}
+          onSave={handleSaveProfile}
+          isSaving={isSavingProfile}
+          loading={profileLoading}
+          error={profileError}
+          onRetry={refetchProfile}
+        />
         <PasswordSection onSave={handleSavePassword} isSaving={isSavingPassword} />
-        <NotificationsSection preferences={notifications} onChange={handleNotificationChange} />
+        <NotificationsSection
+          preferences={notifications}
+          onChange={handleNotificationChange}
+          loading={notificationsLoading}
+        />
         <ThemeSection />
         <SystemInfoSection info={systemInfo} loading={systemInfoLoading} />
       </div>

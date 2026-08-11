@@ -1,44 +1,51 @@
-import apiClient, { USE_MOCKS } from './apiClient'
-import { mockDelay } from './mockHelpers'
+import { supabase } from '@/lib/supabaseClient'
+import { DIAGNOSIS_STAGE } from '@/constants/status'
 
-const MOCK_RECENT_DIAGNOSES = [
-  { id: 'sess_r1', patientId: 'pat_4', patientName: 'Yaw Darko', date: '2026-07-10', status: 'Completed' },
-  { id: 'sess_r2', patientId: 'pat_7', patientName: 'Adjoa Frimpong', date: '2026-07-05', status: 'Completed' },
-  { id: 'sess_r3', patientId: 'pat_2', patientName: 'Kwame Owusu', date: '2026-07-02', status: 'Processing' },
-  { id: 'sess_r4', patientId: 'pat_5', patientName: 'Abena Asante', date: '2026-06-30', status: 'Completed' },
-  { id: 'sess_r5', patientId: 'pat_1', patientName: 'Ama Boateng', date: '2026-06-18', status: 'Completed' },
-]
-
-const MOCK_STATS = {
-  totalPatients: 8,
-  diagnosesCompleted: 23,
-  reportsGenerated: 6,
-  systemStatus: 'operational',
+const STAGE_TO_DASHBOARD_STATUS = {
+  [DIAGNOSIS_STAGE.COMPLETE]: 'Completed',
+  [DIAGNOSIS_STAGE.FAILED]: 'Failed',
 }
 
 export const dashboardApi = {
   async getStats() {
-    if (USE_MOCKS) {
-      return mockDelay(MOCK_STATS, 300)
+    const [patients, sessions, reports] = await Promise.all([
+      supabase.from('patients').select('id', { count: 'exact', head: true }),
+      supabase
+        .from('diagnosis_sessions')
+        .select('id', { count: 'exact', head: true })
+        .eq('stage', DIAGNOSIS_STAGE.COMPLETE),
+      supabase.from('reports').select('id', { count: 'exact', head: true }),
+    ])
+
+    const errors = [patients, sessions, reports].map((r) => r.error).filter(Boolean)
+    if (errors.length > 0) throw errors[0]
+
+    return {
+      totalPatients: patients.count ?? 0,
+      diagnosesCompleted: sessions.count ?? 0,
+      reportsGenerated: reports.count ?? 0,
+      systemStatus: 'operational',
     }
-    const { data } = await apiClient.get('/dashboard/stats')
-    return data
   },
 
   async getRecentDiagnoses({ page = 1, pageSize = 5 } = {}) {
-    if (USE_MOCKS) {
-      const pageCount = Math.max(1, Math.ceil(MOCK_RECENT_DIAGNOSES.length / pageSize))
-      const start = (page - 1) * pageSize
-      return mockDelay(
-        {
-          items: MOCK_RECENT_DIAGNOSES.slice(start, start + pageSize),
-          page,
-          pageCount,
-        },
-        300
-      )
+    const { data, count, error } = await supabase
+      .from('diagnosis_sessions')
+      .select('id, patient_id, patient_name, stage, created_at', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range((page - 1) * pageSize, page * pageSize - 1)
+    if (error) throw error
+
+    return {
+      items: (data ?? []).map((row) => ({
+        id: row.id,
+        patientId: row.patient_id,
+        patientName: row.patient_name,
+        date: row.created_at,
+        status: STAGE_TO_DASHBOARD_STATUS[row.stage] ?? 'Processing',
+      })),
+      page,
+      pageCount: Math.max(1, Math.ceil((count ?? 0) / pageSize)),
     }
-    const { data } = await apiClient.get('/dashboard/recent-diagnoses', { params: { page, pageSize } })
-    return data
   },
 }

@@ -2,8 +2,8 @@ import { treatmentApi } from '@/api/treatmentApi'
 
 function normalizeError(error) {
   return {
-    message: error.response?.data?.message || 'Something went wrong generating the treatment plan.',
-    code: error.response?.status ?? 'UNKNOWN',
+    message: error.message || 'Something went wrong generating the treatment plan.',
+    code: error.code ?? error.status ?? 'UNKNOWN',
   }
 }
 

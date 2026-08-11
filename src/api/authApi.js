@@ -1,10 +1,7 @@
-import { USE_SUPABASE_AUTH } from './apiClient'
-import { mockDelay } from './mockHelpers'
 import { supabase } from '@/lib/supabaseClient'
 
 // Maps a Supabase auth user (+ optional profiles row) into the shape the
 // rest of the app expects: { id, name, email, role, clinicName }.
-// Adjust the `profiles` table/column names below if yours differ.
 async function toAppUser(authUser) {
   if (!authUser) return null
 
@@ -25,23 +22,6 @@ async function toAppUser(authUser) {
 
 export const authApi = {
   async login({ email, password }) {
-    if (!USE_SUPABASE_AUTH) {
-      if (!email || !password) {
-        const err = new Error('Invalid credentials')
-        err.code = 'INVALID_CREDENTIALS'
-        throw err
-      }
-      return mockDelay({
-        token: 'mock-jwt-token',
-        user: {
-          id: 'usr_1',
-          name: email.split('@')[0],
-          email,
-          role: 'dentist',
-        },
-      })
-    }
-
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
 
@@ -50,14 +30,6 @@ export const authApi = {
   },
 
   async register({ name, email, password }) {
-    if (!USE_SUPABASE_AUTH) {
-      return mockDelay({
-        token: 'mock-jwt-token',
-        user: { id: 'usr_new', name, email, role: 'dentist' },
-        needsEmailConfirmation: false,
-      })
-    }
-
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -75,18 +47,12 @@ export const authApi = {
   },
 
   async forgotPassword(email) {
-    if (!USE_SUPABASE_AUTH) {
-      return mockDelay({ success: true })
-    }
     const { error } = await supabase.auth.resetPasswordForEmail(email)
     if (error) throw error
     return { success: true }
   },
 
   async me() {
-    if (!USE_SUPABASE_AUTH) {
-      return mockDelay({ id: 'usr_1', name: 'Dr. Demo', email: 'demo@dentai.app', role: 'dentist' })
-    }
     const {
       data: { user: authUser },
       error,
@@ -100,14 +66,12 @@ export const authApi = {
   },
 
   async logout() {
-    if (!USE_SUPABASE_AUTH) return mockDelay({ success: true }, 100)
     const { error } = await supabase.auth.signOut()
     if (error) throw error
     return { success: true }
   },
 
   async resendConfirmation(email) {
-    if (!USE_SUPABASE_AUTH) return mockDelay({ success: true }, 300)
     const { error } = await supabase.auth.resend({ type: 'signup', email })
     if (error) throw error
     return { success: true }

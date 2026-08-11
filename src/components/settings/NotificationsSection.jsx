@@ -1,7 +1,23 @@
 import Card from '@/components/ui/Card'
 import Switch from '@/components/ui/Switch'
+import Skeleton from '@/components/ui/Skeleton'
 
-export default function NotificationsSection({ preferences, onChange }) {
+export default function NotificationsSection({ preferences, onChange, loading }) {
+  if (loading) {
+    return (
+      <Card>
+        <Card.Header>
+          <h3 className="text-sm font-medium text-foreground">Notifications</h3>
+        </Card.Header>
+        <Card.Body className="flex flex-col gap-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </Card.Body>
+      </Card>
+    )
+  }
+
   if (!preferences) return null
 
   return (

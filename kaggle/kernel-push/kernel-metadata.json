@@ -1,0 +1,14 @@
+{
+  "id": "lawrenciaasareansa/dentai-train-manifest",
+  "title": "DentAI - E2EFusionModel Training (manifest.csv)",
+  "code_file": "notebookTRAIN.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [
+    "lawrenciaasareansa/mmdental-dataset",
+    "lawrenciaasareansa/mmdental-essentials"
+  ]
+}

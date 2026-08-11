@@ -5,8 +5,8 @@ function normalizeError(error) {
     message:
       error.code === 'NOT_FOUND'
         ? 'This report could not be found.'
-        : error.response?.data?.message || 'Something went wrong. Please try again.',
-    code: error.code ?? error.response?.status ?? 'UNKNOWN',
+        : error.message || 'Something went wrong. Please try again.',
+    code: error.code ?? error.status ?? 'UNKNOWN',
   }
 }
 

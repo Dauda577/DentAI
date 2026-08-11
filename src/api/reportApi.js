@@ -1,58 +1,57 @@
-import apiClient, { USE_MOCKS } from './apiClient'
-import { mockDelay } from './mockHelpers'
+import { supabase } from '@/lib/supabaseClient'
 
-const MOCK_REPORTS = [
-  { id: 'rep_1', patientName: 'Ama Boateng', type: 'Diagnosis Report', date: '2026-06-18', status: 'generated' },
-  { id: 'rep_2', patientName: 'Kwame Owusu', type: 'Treatment Plan', date: '2026-07-02', status: 'generated' },
-  { id: 'rep_3', patientName: 'Efua Mensah', type: 'Diagnosis Report', date: '2026-05-29', status: 'draft' },
-  { id: 'rep_4', patientName: 'Yaw Darko', type: 'Treatment Plan', date: '2026-07-10', status: 'generated' },
-  { id: 'rep_5', patientName: 'Abena Asante', type: 'Diagnosis Report', date: '2026-06-30', status: 'archived' },
-  { id: 'rep_6', patientName: 'Kofi Appiah', type: 'Diagnosis Report', date: '2026-04-15', status: 'generated' },
-]
+const SELECT_FIELDS = 'id, patient_name, type, status, summary, created_at'
 
-function applyListParams(reports, { search = '', page = 1, pageSize = 5 } = {}) {
-  let filtered = reports
-  if (search) {
-    const q = search.toLowerCase()
-    filtered = filtered.filter((r) => r.patientName.toLowerCase().includes(q))
-  }
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
-  const start = (page - 1) * pageSize
+function mapReport(row) {
   return {
-    items: filtered.slice(start, start + pageSize),
-    page,
-    pageCount,
-    total: filtered.length,
+    id: row.id,
+    patientName: row.patient_name,
+    type: row.type ?? 'Diagnostic Report',
+    date: row.created_at,
+    status: row.status ?? 'generated',
+    ...(row.summary != null ? { summary: row.summary } : {}),
   }
 }
 
+function ensureSingle(data) {
+  if (!data || data.length === 0) {
+    const err = new Error('Report not found')
+    err.code = 'NOT_FOUND'
+    throw err
+  }
+  return data[0]
+}
+
 export const reportApi = {
-  async list(params) {
-    if (USE_MOCKS) {
-      return mockDelay(applyListParams(MOCK_REPORTS, params), 350)
+  async list({ search = '', page = 1, pageSize = 5 } = {}) {
+    let query = supabase
+      .from('reports')
+      .select(SELECT_FIELDS, { count: 'exact' })
+      .order('created_at', { ascending: false })
+
+    if (search) {
+      query = query.ilike('patient_name', `%${search}%`)
     }
-    const { data } = await apiClient.get('/reports', { params })
-    return data
+    query = query.range((page - 1) * pageSize, page * pageSize - 1)
+
+    const { data, count, error } = await query
+    if (error) throw error
+
+    return {
+      items: (data ?? []).map(mapReport),
+      page,
+      pageCount: Math.max(1, Math.ceil((count ?? 0) / pageSize)),
+      total: count ?? 0,
+    }
   },
 
   async get(id) {
-    if (USE_MOCKS) {
-      const report = MOCK_REPORTS.find((r) => r.id === id)
-      if (!report) {
-        const err = new Error('Report not found')
-        err.code = 'NOT_FOUND'
-        throw err
-      }
-      return mockDelay(
-        {
-          ...report,
-          summary:
-            'Summary content for this report renders here once the backend report payload shape is finalized.',
-        },
-        300
-      )
-    }
-    const { data } = await apiClient.get(`/reports/${id}`)
-    return data
+    const { data, error } = await supabase
+      .from('reports')
+      .select(SELECT_FIELDS)
+      .eq('id', id)
+      .limit(1)
+    if (error) throw error
+    return mapReport(ensureSingle(data))
   },
 }

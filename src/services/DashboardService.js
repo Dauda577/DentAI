@@ -2,8 +2,8 @@ import { dashboardApi } from '@/api/dashboardApi'
 
 function normalizeError(error) {
   return {
-    message: error.response?.data?.message || 'Something went wrong loading the dashboard.',
-    code: error.response?.status ?? 'UNKNOWN',
+    message: error.message || 'Something went wrong loading the dashboard.',
+    code: error.code ?? error.status ?? 'UNKNOWN',
   }
 }
 

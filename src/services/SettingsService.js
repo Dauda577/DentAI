@@ -5,8 +5,8 @@ function normalizeError(error) {
     return { message: 'Current password is incorrect.', code: error.code }
   }
   return {
-    message: error.response?.data?.message || 'Something went wrong. Please try again.',
-    code: error.code ?? error.response?.status ?? 'UNKNOWN',
+    message: error.message || 'Something went wrong. Please try again.',
+    code: error.code ?? error.status ?? 'UNKNOWN',
   }
 }
 

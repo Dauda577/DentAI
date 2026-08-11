@@ -1,7 +1,6 @@
 import { authApi } from '@/api/authApi'
 import { storage } from '@/utils/storage'
 import { supabase } from '@/lib/supabaseClient'
-import { USE_SUPABASE_AUTH } from '@/api/apiClient'
 
 function normalizeError(error) {
   if (error.code === 'INVALID_CREDENTIALS') {
@@ -9,8 +8,8 @@ function normalizeError(error) {
   }
   // Supabase errors carry a plain `.message` (e.g. "Invalid login credentials").
   return {
-    message: error.message || error.response?.data?.message || 'Something went wrong. Please try again.',
-    code: error.code ?? error.response?.status ?? 'UNKNOWN',
+    message: error.message || 'Something went wrong. Please try again.',
+    code: error.code ?? error.status ?? 'UNKNOWN',
   }
 }
 
@@ -91,10 +90,8 @@ export const AuthService = {
   },
 
   // Keeps AuthContext in sync with Supabase session changes (token refresh,
-  // sign-out from another tab, etc). No-op under mocks. Returns an
-  // unsubscribe function.
+  // sign-out from another tab, etc). Returns an unsubscribe function.
   onAuthStateChange(callback) {
-    if (!USE_SUPABASE_AUTH) return () => {}
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
