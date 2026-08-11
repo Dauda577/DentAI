@@ -1,5 +1,5 @@
 {
-  "id": "lawrenciaasareansa/dentai-train-manifest",
+  "id": "lawrenciaasareansa/dentai-e2efusionmodel-training-manifest-csv",
   "title": "DentAI - E2EFusionModel Training (manifest.csv)",
   "code_file": "notebookTRAIN.ipynb",
   "language": "python",

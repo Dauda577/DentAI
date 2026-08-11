@@ -29,9 +29,9 @@ export default function NewDiagnosis() {
   const onSubmit = async (values) => {
     setIsSubmitting(true)
     try {
-      const { patientId, name, age, sex, weight, ...clinicalNotes } = values
+      const { patientId, name, age, sex, ...clinicalNotes } = values
       const { sessionId } = await DiagnosisService.submit({
-        patientInfo: { patientId, name, age, sex, weight },
+        patientInfo: { patientId, name, age, sex },
         clinicalNotes,
         cbctFile,
       })

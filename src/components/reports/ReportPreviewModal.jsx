@@ -23,7 +23,15 @@ export default function ReportPreviewModal({ isOpen, onClose, report, loading })
             <Badge tone={STATUS_TONE[report.status] ?? 'neutral'}>{report.status}</Badge>
           </div>
           <div className="rounded-lg border border-border bg-background p-4">
-            <p className="text-sm text-muted-foreground">{report.summary}</p>
+            {report.summary ? (
+              report.summary.split('\n').map((line, i) => (
+                <p key={i} className="text-sm text-muted-foreground" style={{ marginBottom: i < report.summary.split('\n').length - 1 ? '8px' : 0 }}>
+                  {line}
+                </p>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No report data available.</p>
+            )}
           </div>
         </div>
       )}

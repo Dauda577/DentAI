@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient'
 
-const SELECT_FIELDS = 'id, patient_name, type, status, summary, created_at'
+const SELECT_FIELDS = 'id, patient_name, type, status, summary, created_at, session_id'
 
 function mapReport(row) {
   return {
@@ -9,7 +9,8 @@ function mapReport(row) {
     type: row.type ?? 'Diagnostic Report',
     date: row.created_at,
     status: row.status ?? 'generated',
-    ...(row.summary != null ? { summary: row.summary } : {}),
+    summary: row.summary,
+    sessionId: row.session_id,
   }
 }
 

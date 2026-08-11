@@ -26,6 +26,15 @@ export default function PatientProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
 
+  if (!id || id === 'null' || id === 'undefined') {
+    return (
+      <ErrorState
+        title="Invalid patient"
+        message="This patient reference is missing or invalid. Please go back and try again."
+      />
+    )
+  }
+
   const fetchPatient = useCallback(() => PatientService.get(id), [id])
   const { data: patient, loading, error, refetch } = useApi(fetchPatient)
 

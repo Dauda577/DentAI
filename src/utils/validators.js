@@ -16,10 +16,6 @@ export const patientInfoSchema = z.object({
   sex: z.enum(['male', 'female', 'other'], {
     errorMap: () => ({ message: 'Select a sex' }),
   }),
-  weight: z
-    .number({ invalid_type_error: 'Weight is required' })
-    .positive('Weight must be greater than 0')
-    .max(400, 'Enter a valid weight'),
 })
 
 export const clinicalNotesSchema = z.object({

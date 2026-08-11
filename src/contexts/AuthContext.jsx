@@ -71,6 +71,10 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  const loginWithGoogle = useCallback(async () => {
+    return AuthService.loginWithGoogle()
+  }, [])
+
   const value = useMemo(
     () => ({
       user,
@@ -80,8 +84,9 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      loginWithGoogle,
     }),
-    [user, isLoading, isInitializing, login, register, logout]
+    [user, isLoading, isInitializing, login, register, logout, loginWithGoogle]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

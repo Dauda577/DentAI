@@ -23,7 +23,7 @@ export default function PatientInfoForm({ register, errors }) {
             {...register('name')}
           />
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input
             label="Age"
             type="number"
@@ -41,13 +41,6 @@ export default function PatientInfoForm({ register, errors }) {
             ]}
             error={errors.sex?.message}
             {...register('sex')}
-          />
-          <Input
-            label="Weight (kg)"
-            type="number"
-            placeholder="e.g. 74"
-            error={errors.weight?.message}
-            {...register('weight', { valueAsNumber: true })}
           />
         </div>
       </Card.Body>

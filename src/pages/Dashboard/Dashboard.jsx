@@ -1,12 +1,9 @@
 import { useCallback, useState } from 'react'
-import { Users, Stethoscope, FileText, Activity } from 'lucide-react'
+import { Users, Stethoscope, FileText } from 'lucide-react'
 import PageHeader from '@/components/common/PageHeader'
 import Card from '@/components/ui/Card'
 import StatCard from '@/components/dashboard/StatCard'
 import RecentDiagnosesTable from '@/components/dashboard/RecentDiagnosesTable'
-import QuickActions from '@/components/dashboard/QuickActions'
-import RecentReports from '@/components/dashboard/RecentReports'
-import SystemStatus from '@/components/dashboard/SystemStatus'
 import ErrorState from '@/components/common/ErrorState'
 import { useApi } from '@/hooks/useApi'
 import { DashboardService } from '@/services/DashboardService'
@@ -28,7 +25,7 @@ export default function Dashboard() {
     <div>
       <PageHeader title="Dashboard" description="A quick overview of clinical activity." />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard label="Total Patients" value={stats?.totalPatients} icon={Users} loading={statsLoading} />
         <StatCard
           label="Diagnoses Completed"
@@ -42,11 +39,10 @@ export default function Dashboard() {
           icon={FileText}
           loading={statsLoading}
         />
-        <StatCard label="System Status" value="Operational" icon={Activity} loading={statsLoading} />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+      <div className="mt-6">
+        <Card>
           <Card.Header>
             <h3 className="text-sm font-medium text-foreground">Recent diagnoses</h3>
           </Card.Header>
@@ -74,12 +70,6 @@ export default function Dashboard() {
             )}
           </Card.Body>
         </Card>
-
-        <div className="flex flex-col gap-6">
-          <QuickActions />
-          <RecentReports />
-          <SystemStatus status={stats?.systemStatus} />
-        </div>
       </div>
     </div>
   )

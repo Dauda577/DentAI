@@ -81,6 +81,14 @@ export const AuthService = {
     }
   },
 
+  async loginWithGoogle() {
+    try {
+      return await authApi.loginWithGoogle()
+    } catch (error) {
+      throw normalizeError(error)
+    }
+  },
+
   getStoredUser() {
     return storage.get('user')
   },

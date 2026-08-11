@@ -50,6 +50,41 @@ async function resolvePatient(userId, patientInfo) {
   return data.id
 }
 
+async function generateReport(sessionId) {
+  const { data: session } = await supabase
+    .from('diagnosis_sessions')
+    .select('id, user_id, patient_id, patient_name, patient_age, patient_sex, diseases, clinical_notes, created_at')
+    .eq('id', sessionId)
+    .maybeSingle()
+  if (!session) return
+
+  const findings = Array.isArray(session.diseases)
+    ? session.diseases
+        .filter((d) => d.status !== 'Unlikely')
+        .map((d) => `${d.name}: ${d.status} (${Math.round(d.confidence * 100)}% confidence)`)
+        .join('; ')
+    : 'No significant findings.'
+
+  const summary = [
+    `Patient: ${session.patient_name}, ${session.patient_age}y ${session.patient_sex || ''}`,
+    `Date: ${new Date(session.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+    `Findings: ${findings}`,
+    session.clinical_notes ? `Notes: ${session.clinical_notes}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  await supabase.from('reports').insert({
+    user_id: session.user_id,
+    session_id: session.id,
+    patient_id: session.patient_id,
+    patient_name: session.patient_name,
+    type: 'Diagnostic Report',
+    status: 'generated',
+    summary,
+  })
+}
+
 export const diagnosisApi = {
   async submit({ patientInfo, clinicalNotes, cbctFile }) {
     const {
@@ -129,6 +164,9 @@ export const diagnosisApi = {
         .eq('id', sessionId)
         .eq('stage', DIAGNOSIS_STAGE.UPLOADING)
       if (finalizeError) throw finalizeError
+
+      generateReport(sessionId).catch(() => {})
+
       return { sessionId, stage: DIAGNOSIS_STAGE.COMPLETE, progress: 100 }
     }
 

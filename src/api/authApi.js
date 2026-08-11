@@ -76,4 +76,15 @@ export const authApi = {
     if (error) throw error
     return { success: true }
   },
+
+  async loginWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
+      },
+    })
+    if (error) throw error
+    return data
+  },
 }

@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 const Login = lazy(() => import('@/pages/Auth/Login'))
 const Register = lazy(() => import('@/pages/Auth/Register'))
 const ForgotPassword = lazy(() => import('@/pages/Auth/ForgotPassword'))
+const AuthCallback = lazy(() => import('@/pages/Auth/AuthCallback'))
 
 const Dashboard = lazy(() => import('@/pages/Dashboard/Dashboard'))
 const PatientsList = lazy(() => import('@/pages/Patients/PatientsList'))
@@ -35,6 +36,7 @@ export default function AppRoutes() {
     <Suspense fallback={<LoadingOverlay />}>
       <Routes>
         <Route path={ROUTES.ROOT} element={<RootRedirect />} />
+        <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallback />} />
 
         <Route element={<AuthLayout />}>
           <Route path={ROUTES.LOGIN} element={<Login />} />

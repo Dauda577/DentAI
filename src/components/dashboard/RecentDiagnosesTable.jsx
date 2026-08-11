@@ -21,19 +21,22 @@ export default function RecentDiagnosesTable({ diagnoses, loading, pagination })
     {
       key: 'actions',
       header: '',
-      render: (row) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            navigate(ROUTES.PATIENT_PROFILE(row.patientId))
-          }}
-          aria-label="View patient"
-          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10"
-        >
-          <Eye className="h-3.5 w-3.5" />
-          View
-        </button>
-      ),
+      render: (row) =>
+        row.patientId ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              navigate(ROUTES.PATIENT_PROFILE(row.patientId))
+            }}
+            aria-label="View patient"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            View
+          </button>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        ),
     },
   ]
 
