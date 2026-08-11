@@ -25,6 +25,13 @@ export default function PatientTable({
         </div>
       ),
     },
+    {
+      key: 'patientReference',
+      header: 'Patient ID',
+      render: (row) => (
+        <span className="font-mono text-xs text-muted-foreground">{row.patientReference || '—'}</span>
+      ),
+    },
     { key: 'age', header: 'Age', sortable: true },
     { key: 'sex', header: 'Sex', render: (row) => <span className="capitalize">{row.sex}</span> },
     { key: 'phone', header: 'Phone' },

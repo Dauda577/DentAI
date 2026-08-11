@@ -17,6 +17,7 @@ export default function ReportPreviewModal({ isOpen, onClose, report, loading })
             <div>
               <h3 className="font-display text-base font-medium text-foreground">{report.type}</h3>
               <p className="mt-0.5 text-sm text-muted-foreground">
+                {report.patientReference ? `${report.patientReference} · ` : ''}
                 {report.patientName} · {formatDate(report.date)}
               </p>
             </div>

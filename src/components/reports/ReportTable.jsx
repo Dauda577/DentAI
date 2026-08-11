@@ -8,6 +8,13 @@ const STATUS_TONE = { generated: 'success', draft: 'warning', archived: 'neutral
 export default function ReportTable({ reports, loading, pagination, onView, onDownload }) {
   const columns = [
     { key: 'patientName', header: 'Patient' },
+    {
+      key: 'patientReference',
+      header: 'Patient ID',
+      render: (row) => (
+        <span className="font-mono text-xs text-muted-foreground">{row.patientReference || '—'}</span>
+      ),
+    },
     { key: 'type', header: 'Type' },
     { key: 'date', header: 'Date', render: (row) => formatDate(row.date) },
     {

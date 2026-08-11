@@ -1,11 +1,12 @@
 import { supabase } from '@/lib/supabaseClient'
 
-const SELECT_WITH_COUNTS = 'id, name, age, sex, phone, created_at, sessions:diagnosis_sessions(count)'
-const SORTABLE_KEYS = ['name', 'age', 'created_at']
+const SELECT_WITH_COUNTS = 'id, patient_reference, name, age, sex, phone, created_at, sessions:diagnosis_sessions(count)'
+const SORTABLE_KEYS = ['name', 'age', 'created_at', 'patient_reference']
 
 function mapPatient(row) {
   return {
     id: row.id,
+    patientReference: row.patient_reference ?? '',
     name: row.name,
     age: row.age,
     sex: row.sex,
@@ -32,7 +33,7 @@ export const patientApi = {
       .order('created_at', { ascending: false })
 
     if (search) {
-      query = query.ilike('name', `%${search}%`)
+      query = query.or(`name.ilike.%${search}%,patient_reference.ilike.%${search}%`)
     }
     if (sort?.key && SORTABLE_KEYS.includes(sort.key)) {
       query = query.order(sort.key, { ascending: sort.direction !== 'desc' })
@@ -64,19 +65,36 @@ export const patientApi = {
     const {
       data: { user },
     } = await supabase.auth.getUser()
+
+    const reference = (payload.patientReference ?? '').trim()
+    if (reference) {
+      const { data: existing } = await supabase
+        .from('patients')
+        .select('id, patient_reference, name, age, sex, phone, created_at')
+        .eq('user_id', user?.id)
+        .eq('patient_reference', reference)
+        .maybeSingle()
+      if (existing) return { ...mapPatient(existing), diagnosesCount: 0 }
+    }
+
     const { data, error } = await supabase
       .from('patients')
-      .insert({ user_id: user?.id, ...payload })
-      .select('id, name, age, sex, phone, created_at')
+      .insert({ user_id: user?.id, ...payload, patient_reference: reference || null })
+      .select('id, patient_reference, name, age, sex, phone, created_at')
       .single()
     if (error) throw error
-    return { ...data, lastVisit: null, diagnosesCount: 0 }
+    return { ...mapPatient(data), lastVisit: null, diagnosesCount: 0 }
   },
 
   async update(id, payload) {
+    const updatePayload = { ...payload }
+    if (updatePayload.patientReference !== undefined) {
+      updatePayload.patient_reference = updatePayload.patientReference.trim() || null
+      delete updatePayload.patientReference
+    }
     const { data, error } = await supabase
       .from('patients')
-      .update(payload)
+      .update(updatePayload)
       .eq('id', id)
       .select(SELECT_WITH_COUNTS)
       .limit(1)

@@ -1,10 +1,11 @@
 import { supabase } from '@/lib/supabaseClient'
 
-const SELECT_FIELDS = 'id, patient_name, type, status, summary, created_at, session_id'
+const SELECT_FIELDS = 'id, patient_reference, patient_name, type, status, summary, created_at, session_id'
 
 function mapReport(row) {
   return {
     id: row.id,
+    patientReference: row.patient_reference ?? '',
     patientName: row.patient_name,
     type: row.type ?? 'Diagnostic Report',
     date: row.created_at,
@@ -31,7 +32,7 @@ export const reportApi = {
       .order('created_at', { ascending: false })
 
     if (search) {
-      query = query.ilike('patient_name', `%${search}%`)
+      query = query.or(`patient_name.ilike.%${search}%,patient_reference.ilike.%${search}%`)
     }
     query = query.range((page - 1) * pageSize, page * pageSize - 1)
 

@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
 import {
   LayoutDashboard,
   Stethoscope,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react'
 import { ROUTES } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
+import ConfirmationDialog from '@/components/ui/ConfirmationDialog'
 
 const NAV_ITEMS = [
   { to: ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
@@ -24,6 +26,7 @@ const NAV_ITEMS = [
 
 function SidebarContent({ isCollapsed, onNavigate }) {
   const { logout } = useAuth()
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
 
   return (
     <div className="flex h-full flex-col bg-card">
@@ -63,13 +66,22 @@ function SidebarContent({ isCollapsed, onNavigate }) {
 
       <div className="border-t border-border p-3">
         <button
-          onClick={logout}
+          onClick={() => setShowLogoutDialog(true)}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-card-hover hover:text-foreground"
         >
           <LogOut className="h-4.5 w-4.5 shrink-0" />
           {!isCollapsed && <span>Logout</span>}
         </button>
       </div>
+
+      <ConfirmationDialog
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={() => { setShowLogoutDialog(false); logout() }}
+        title="Sign out"
+        description="Are you sure you want to sign out of DentAI?"
+        confirmLabel="Sign out"
+      />
     </div>
   )
 }

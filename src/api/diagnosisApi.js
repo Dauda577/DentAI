@@ -31,10 +31,31 @@ function ensureSingle(data) {
 }
 
 async function resolvePatient(userId, patientInfo) {
-  const looksLikeUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-    patientInfo.patientId ?? ''
-  )
-  if (looksLikeUuid) return patientInfo.patientId
+  const reference = (patientInfo.patientId ?? '').trim()
+
+  if (reference) {
+    const { data: existing } = await supabase
+      .from('patients')
+      .select('id, patient_reference')
+      .eq('user_id', userId)
+      .eq('patient_reference', reference)
+      .maybeSingle()
+    if (existing) return { patientId: existing.id, patientReference: existing.patient_reference }
+
+    const { data, error } = await supabase
+      .from('patients')
+      .insert({
+        user_id: userId,
+        name: patientInfo.name,
+        age: patientInfo.age,
+        sex: patientInfo.sex,
+        patient_reference: reference,
+      })
+      .select('id')
+      .single()
+    if (error) throw error
+    return { patientId: data.id, patientReference: reference }
+  }
 
   const { data, error } = await supabase
     .from('patients')
@@ -47,13 +68,13 @@ async function resolvePatient(userId, patientInfo) {
     .select('id')
     .single()
   if (error) throw error
-  return data.id
+  return { patientId: data.id, patientReference: '' }
 }
 
 async function generateReport(sessionId) {
   const { data: session } = await supabase
     .from('diagnosis_sessions')
-    .select('id, user_id, patient_id, patient_name, patient_age, patient_sex, diseases, clinical_notes, created_at')
+    .select('id, user_id, patient_id, patient_reference, patient_name, patient_age, patient_sex, diseases, clinical_notes, created_at')
     .eq('id', sessionId)
     .maybeSingle()
   if (!session) return
@@ -66,7 +87,7 @@ async function generateReport(sessionId) {
     : 'No significant findings.'
 
   const summary = [
-    `Patient: ${session.patient_name}, ${session.patient_age}y ${session.patient_sex || ''}`,
+    `Patient: ${session.patient_reference ? `${session.patient_reference} · ` : ''}${session.patient_name}, ${session.patient_age}y ${session.patient_sex || ''}`,
     `Date: ${new Date(session.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
     `Findings: ${findings}`,
     session.clinical_notes ? `Notes: ${session.clinical_notes}` : '',
@@ -78,6 +99,7 @@ async function generateReport(sessionId) {
     user_id: session.user_id,
     session_id: session.id,
     patient_id: session.patient_id,
+    patient_reference: session.patient_reference,
     patient_name: session.patient_name,
     type: 'Diagnostic Report',
     status: 'generated',
@@ -96,13 +118,14 @@ export const diagnosisApi = {
       throw err
     }
 
-    const patientId = await resolvePatient(user.id, patientInfo)
+    const { patientId, patientReference } = await resolvePatient(user.id, patientInfo)
 
     const { data: session, error: insertError } = await supabase
       .from('diagnosis_sessions')
       .insert({
         user_id: user.id,
         patient_id: patientId,
+        patient_reference: patientReference,
         patient_name: patientInfo.name,
         patient_age: patientInfo.age,
         patient_sex: patientInfo.sex,
@@ -177,7 +200,7 @@ export const diagnosisApi = {
     const { data, error } = await supabase
       .from('diagnosis_sessions')
       .select(
-        'id, patient_id, patient_name, patient_age, patient_sex, patient_weight, clinical_notes, cbct_file_name, created_at, diseases'
+        'id, patient_id, patient_reference, patient_name, patient_age, patient_sex, patient_weight, clinical_notes, cbct_file_name, created_at, diseases'
       )
       .eq('id', sessionId)
       .limit(1)
@@ -193,7 +216,7 @@ export const diagnosisApi = {
     return {
       sessionId,
       patient: {
-        patientId: row.patient_id,
+        patientId: row.patient_reference || row.patient_id,
         name: row.patient_name,
         age: row.patient_age,
         sex: row.patient_sex,

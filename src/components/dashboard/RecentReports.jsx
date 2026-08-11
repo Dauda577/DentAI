@@ -38,6 +38,7 @@ export default function RecentReports() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-foreground">{report.type}</p>
                 <p className="text-xs text-muted-foreground">
+                  {report.patientReference ? `${report.patientReference} · ` : ''}
                   {report.patientName} · {formatDate(report.date)}
                 </p>
               </div>

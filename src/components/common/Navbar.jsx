@@ -4,6 +4,7 @@ import Breadcrumb from './Breadcrumb'
 import Avatar from '@/components/ui/Avatar'
 import Dropdown from '@/components/ui/Dropdown'
 import SearchInput from '@/components/ui/SearchInput'
+import ConfirmationDialog from '@/components/ui/ConfirmationDialog'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/constants/routes'
@@ -12,6 +13,7 @@ export default function Navbar({ onOpenMobileSidebar }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [globalSearch, setGlobalSearch] = useState('')
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
 
   const submitGlobalSearch = (e) => {
     e.preventDefault()
@@ -59,10 +61,19 @@ export default function Navbar({ onOpenMobileSidebar }) {
           <Dropdown.Item icon={Settings} onClick={() => navigate(ROUTES.SETTINGS)}>
             Settings
           </Dropdown.Item>
-          <Dropdown.Item icon={LogOut} danger onClick={logout}>
+          <Dropdown.Item icon={LogOut} danger onClick={() => setShowLogoutDialog(true)}>
             Logout
           </Dropdown.Item>
         </Dropdown>
+
+        <ConfirmationDialog
+          isOpen={showLogoutDialog}
+          onClose={() => setShowLogoutDialog(false)}
+          onConfirm={() => { setShowLogoutDialog(false); logout() }}
+          title="Sign out"
+          description="Are you sure you want to sign out of DentAI?"
+          confirmLabel="Sign out"
+        />
       </div>
     </header>
   )

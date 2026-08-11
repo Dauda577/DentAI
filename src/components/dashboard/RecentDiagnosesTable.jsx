@@ -12,6 +12,13 @@ export default function RecentDiagnosesTable({ diagnoses, loading, pagination })
 
   const columns = [
     { key: 'patientName', header: 'Patient' },
+    {
+      key: 'patientRef',
+      header: 'Patient ID',
+      render: (row) => (
+        <span className="font-mono text-xs text-muted-foreground">{row.patientRef || row.patientId || '—'}</span>
+      ),
+    },
     { key: 'date', header: 'Date', render: (row) => formatDate(row.date) },
     {
       key: 'status',

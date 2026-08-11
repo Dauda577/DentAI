@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button'
 
 const patientFormSchema = z.object({
   name: z.string().min(1, 'Patient name is required'),
+  patientReference: z.string().trim().max(50, 'Patient ID must be 50 characters or fewer').optional().default(''),
   age: z.number({ invalid_type_error: 'Age is required' }).int().positive().max(130),
   sex: z.enum(['male', 'female', 'other'], { errorMap: () => ({ message: 'Select a sex' }) }),
   phone: z.string().optional().default(''),
@@ -23,7 +24,10 @@ export default function PatientForm({ isOpen, onClose, onSubmit, initialValues, 
   } = useForm({ resolver: zodResolver(patientFormSchema) })
 
   useEffect(() => {
-    if (isOpen) reset(initialValues ?? { name: '', age: undefined, sex: undefined, phone: '' })
+    if (isOpen)
+      reset(
+        initialValues ?? { name: '', patientReference: '', age: undefined, sex: undefined, phone: '' }
+      )
   }, [isOpen, initialValues, reset])
 
   return (
@@ -44,6 +48,12 @@ export default function PatientForm({ isOpen, onClose, onSubmit, initialValues, 
     >
       <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
         <Input label="Full name" placeholder="Patient name" error={errors.name?.message} {...register('name')} />
+        <Input
+          label="Patient ID"
+          placeholder="e.g. PT-1042"
+          error={errors.patientReference?.message}
+          {...register('patientReference')}
+        />
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="Age"

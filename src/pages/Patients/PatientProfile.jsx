@@ -25,8 +25,12 @@ const MOCK_VISITS = [
 export default function PatientProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const invalidId = !id || id === 'null' || id === 'undefined'
 
-  if (!id || id === 'null' || id === 'undefined') {
+  const fetchPatient = useCallback(() => PatientService.get(id), [id])
+  const { data: patient, loading, error, refetch } = useApi(fetchPatient)
+
+  if (invalidId) {
     return (
       <ErrorState
         title="Invalid patient"
@@ -34,9 +38,6 @@ export default function PatientProfile() {
       />
     )
   }
-
-  const fetchPatient = useCallback(() => PatientService.get(id), [id])
-  const { data: patient, loading, error, refetch } = useApi(fetchPatient)
 
   if (loading) return <LoadingOverlay label="Loading patient…" />
 
@@ -72,6 +73,10 @@ export default function PatientProfile() {
               </p>
             </div>
             <div className="mt-2 w-full space-y-2 border-t border-border pt-4 text-left text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Patient ID</span>
+                <span className="font-mono text-foreground">{patient.patientReference || '—'}</span>
+              </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Phone</span>
                 <span className="text-foreground">{patient.phone || '—'}</span>

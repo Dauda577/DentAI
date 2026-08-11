@@ -31,7 +31,7 @@ export const dashboardApi = {
   async getRecentDiagnoses({ page = 1, pageSize = 5 } = {}) {
     const { data, count, error } = await supabase
       .from('diagnosis_sessions')
-      .select('id, patient_id, patient_name, stage, created_at', { count: 'exact' })
+      .select('id, patient_id, patient_reference, patient_name, stage, created_at', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range((page - 1) * pageSize, page * pageSize - 1)
     if (error) throw error
@@ -40,6 +40,7 @@ export const dashboardApi = {
       items: (data ?? []).map((row) => ({
         id: row.id,
         patientId: row.patient_id,
+        patientRef: row.patient_reference || '',
         patientName: row.patient_name,
         date: row.created_at,
         status: STAGE_TO_DASHBOARD_STATUS[row.stage] ?? 'Processing',
