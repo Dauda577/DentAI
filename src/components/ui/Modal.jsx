@@ -40,7 +40,7 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
     }
   }, [isOpen, onClose])
 
-  const widths = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl' }
+  const widths = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-5xl' }
 
   return createPortal(
     <AnimatePresence>

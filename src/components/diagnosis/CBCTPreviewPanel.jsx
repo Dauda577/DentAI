@@ -1,25 +1,27 @@
 import { useEffect, useRef, useState } from 'react'
-import { ScanFace, Loader2 } from 'lucide-react'
+import { ScanFace, Loader2, Maximize2 } from 'lucide-react'
 import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Modal from '@/components/ui/Modal'
 import { useNiftiScan } from '@/hooks/useNiftiScan'
 
+const fmt = (v) => (Math.round(v * 10) / 10).toLocaleString()
+
 /**
- * Interactive NIfTI CBCT preview. Renders axial slices to a canvas with
- * slice navigation and window/level controls.
+ * Renders a single scan slice and the slice/window-level controls. Shared by
+ * the inline panel and the full-size modal viewer so both stay in sync.
  */
-export default function CBCTPreviewPanel({ fileName, filePath }) {
+function ScanViewer({
+  slice,
+  totalSlices,
+  sliceIndex,
+  onSliceChange,
+  windowLevel,
+  onWindowLevelChange,
+  maxHeight,
+  onCanvasClick,
+}) {
   const canvasRef = useRef(null)
-  const [sliceIndex, setSliceIndex] = useState(0)
-  const [zoomed, setZoomed] = useState(false)
-
-  const { dimensions, windowLevel, setWindowLevel, getSliceImageData, totalSlices, loading, error } =
-    useNiftiScan(filePath, { enabled: Boolean(filePath) })
-
-  useEffect(() => {
-    setSliceIndex((cur) => (cur > 0 && cur < (totalSlices || 1) ? cur : Math.floor(totalSlices / 2)))
-  }, [filePath, totalSlices])
-
-  const slice = getSliceImageData(sliceIndex)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -33,9 +35,96 @@ export default function CBCTPreviewPanel({ fileName, filePath }) {
     const out = ctx.createImageData(slice.width, slice.height)
     out.data.set(slice.data)
     ctx.putImageData(out, 0, 0)
-  }, [slice, zoomed])
+  }, [slice])
 
-  const fmt = (v) => (Math.round(v * 10) / 10).toLocaleString()
+  if (!slice) return null
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="relative overflow-hidden rounded-lg border border-border bg-black">
+        <canvas
+          ref={canvasRef}
+          onClick={onCanvasClick}
+          role={onCanvasClick ? 'button' : undefined}
+          aria-label={onCanvasClick ? 'Open full-size scan viewer' : undefined}
+          className={`mx-auto block w-full object-contain ${onCanvasClick ? 'cursor-zoom-in' : ''}`}
+          style={{ height: maxHeight }}
+        />
+        <span className="absolute left-2 top-2 rounded bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
+          Slice {slice.slice + 1} / {totalSlices}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <input
+          type="range"
+          min={0}
+          max={Math.max(0, totalSlices - 1)}
+          value={sliceIndex}
+          onChange={(e) => onSliceChange(Number(e.target.value))}
+          className="h-2 flex-1 cursor-pointer accent-primary"
+          aria-label="Slice"
+        />
+        <span className="w-12 text-right font-mono text-xs text-muted-foreground">
+          {sliceIndex + 1}/{totalSlices}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <label className="block">
+          <span className="text-xs text-muted-foreground">
+            Window width — {fmt(windowLevel.windowWidth)}
+          </span>
+          <input
+            type="range"
+            min={Math.max(1, Math.round(windowLevel.windowWidth / 8))}
+            max={Math.round(windowLevel.windowWidth * 4)}
+            value={windowLevel.windowWidth}
+            onChange={(e) =>
+              onWindowLevelChange((wl) => ({ ...wl, windowWidth: Number(e.target.value) }))
+            }
+            className="mt-1 h-2 w-full cursor-pointer accent-primary"
+            aria-label="Window width"
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs text-muted-foreground">
+            Window center — {fmt(windowLevel.windowCenter)}
+          </span>
+          <input
+            type="range"
+            min={Math.round(windowLevel.windowCenter - windowLevel.windowWidth)}
+            max={Math.round(windowLevel.windowCenter + windowLevel.windowWidth)}
+            value={windowLevel.windowCenter}
+            onChange={(e) =>
+              onWindowLevelChange((wl) => ({ ...wl, windowCenter: Number(e.target.value) }))
+            }
+            className="mt-1 h-2 w-full cursor-pointer accent-primary"
+            aria-label="Window center"
+          />
+        </label>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Interactive NIfTI CBCT preview. Renders axial slices to a canvas with
+ * slice navigation and window/level controls. Clicking the image opens the
+ * same viewer full-size in a modal.
+ */
+export default function CBCTPreviewPanel({ fileName, filePath }) {
+  const [sliceIndex, setSliceIndex] = useState(0)
+  const [viewerOpen, setViewerOpen] = useState(false)
+
+  const { dimensions, windowLevel, setWindowLevel, getSliceImageData, totalSlices, loading, error } =
+    useNiftiScan(filePath, { enabled: Boolean(filePath) })
+
+  useEffect(() => {
+    setSliceIndex((cur) => (cur > 0 && cur < (totalSlices || 1) ? cur : Math.floor(totalSlices / 2)))
+  }, [filePath, totalSlices])
+
+  const slice = getSliceImageData(sliceIndex)
 
   const renderEmpty = () => (
     <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border bg-background py-16 text-center">
@@ -85,71 +174,46 @@ export default function CBCTPreviewPanel({ fileName, filePath }) {
             : !slice
               ? renderEmpty()
               : (
-                  <div className="flex flex-col gap-4">
-                    <div className="relative overflow-hidden rounded-lg border border-border bg-black">
-                      <canvas
-                        ref={canvasRef}
-                        onClick={() => setZoomed((z) => !z)}
-                        className="mx-auto block w-full cursor-zoom-in object-contain"
-                        style={{ height: zoomed ? undefined : 'min(340px, 40vh)' }}
-                      />
-                      <span className="absolute left-2 top-2 rounded bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
-                        Slice {slice.slice + 1} / {totalSlices}
-                      </span>
-                    </div>
+                  <div className="flex flex-col gap-3">
+                    <ScanViewer
+                      slice={slice}
+                      totalSlices={totalSlices}
+                      sliceIndex={sliceIndex}
+                      onSliceChange={setSliceIndex}
+                      windowLevel={windowLevel}
+                      onWindowLevelChange={setWindowLevel}
+                      maxHeight="min(340px, 40vh)"
+                      onCanvasClick={() => setViewerOpen(true)}
+                    />
 
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="range"
-                        min={0}
-                        max={Math.max(0, totalSlices - 1)}
-                        value={sliceIndex}
-                        onChange={(e) => setSliceIndex(Number(e.target.value))}
-                        className="h-2 flex-1 cursor-pointer accent-primary"
-                        aria-label="Slice"
-                      />
-                      <span className="w-12 text-right font-mono text-xs text-muted-foreground">
-                        {sliceIndex + 1}/{totalSlices}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <label className="block">
-                        <span className="text-xs text-muted-foreground">
-                          Window width — {fmt(windowLevel.windowWidth)}
-                        </span>
-                        <input
-                          type="range"
-                          min={Math.max(1, Math.round(windowLevel.windowWidth / 8))}
-                          max={Math.round(windowLevel.windowWidth * 4)}
-                          value={windowLevel.windowWidth}
-                          onChange={(e) =>
-                            setWindowLevel((wl) => ({ ...wl, windowWidth: Number(e.target.value) }))
-                          }
-                          className="mt-1 h-2 w-full cursor-pointer accent-primary"
-                          aria-label="Window width"
-                        />
-                      </label>
-                      <label className="block">
-                        <span className="text-xs text-muted-foreground">
-                          Window center — {fmt(windowLevel.windowCenter)}
-                        </span>
-                        <input
-                          type="range"
-                          min={Math.round(windowLevel.windowCenter - windowLevel.windowWidth)}
-                          max={Math.round(windowLevel.windowCenter + windowLevel.windowWidth)}
-                          value={windowLevel.windowCenter}
-                          onChange={(e) =>
-                            setWindowLevel((wl) => ({ ...wl, windowCenter: Number(e.target.value) }))
-                          }
-                          className="mt-1 h-2 w-full cursor-pointer accent-primary"
-                          aria-label="Window center"
-                        />
-                      </label>
-                    </div>
+                    <button
+                      onClick={() => setViewerOpen(true)}
+                      className="flex items-center justify-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-card-hover hover:text-foreground"
+                    >
+                      <Maximize2 className="h-3.5 w-3.5" />
+                      View full size
+                    </button>
                   </div>
                 )}
       </Card.Body>
+
+      <Modal
+        isOpen={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        title="Full-size scan viewer"
+        size="xl"
+        footer={<Button onClick={() => setViewerOpen(false)}>Close</Button>}
+      >
+        <ScanViewer
+          slice={slice}
+          totalSlices={totalSlices}
+          sliceIndex={sliceIndex}
+          onSliceChange={setSliceIndex}
+          windowLevel={windowLevel}
+          onWindowLevelChange={setWindowLevel}
+          maxHeight="min(70vh, 640px)"
+        />
+      </Modal>
     </Card>
   )
 }
