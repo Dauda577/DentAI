@@ -4,7 +4,7 @@ import { formatDate } from '@/utils/dateFormatter'
 export default function PatientSummaryCard({ patient, date }) {
   return (
     <Card>
-      <Card.Body className="grid grid-cols-2 gap-4 sm:grid-cols-6">
+      <Card.Body className="grid grid-cols-2 gap-4 sm:grid-cols-5">
         <div>
           <p className="text-xs text-muted-foreground">Patient ID</p>
           <p className="mt-0.5 text-sm font-medium text-foreground">{patient?.patientId || '—'}</p>
@@ -20,12 +20,6 @@ export default function PatientSummaryCard({ patient, date }) {
         <div>
           <p className="text-xs text-muted-foreground">Sex</p>
           <p className="mt-0.5 text-sm font-medium capitalize text-foreground">{patient?.sex ?? '—'}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Weight</p>
-          <p className="mt-0.5 text-sm font-medium text-foreground">
-            {patient?.weight ? `${patient.weight} kg` : '—'}
-          </p>
         </div>
         <div>
           <p className="text-xs text-muted-foreground">Date</p>

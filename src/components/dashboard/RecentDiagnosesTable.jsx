@@ -5,7 +5,7 @@ import Badge from '@/components/ui/Badge'
 import { formatDate } from '@/utils/dateFormatter'
 import { ROUTES } from '@/constants/routes'
 
-const STATUS_TONE = { Completed: 'success', Processing: 'info', Failed: 'error' }
+const STATUS_TONE = { Completed: 'success', Processing: 'info', Failed: 'error', Stalled: 'warning' }
 
 export default function RecentDiagnosesTable({ diagnoses, loading, pagination }) {
   const navigate = useNavigate()
@@ -16,7 +16,7 @@ export default function RecentDiagnosesTable({ diagnoses, loading, pagination })
       key: 'patientRef',
       header: 'Patient ID',
       render: (row) => (
-        <span className="font-mono text-xs text-muted-foreground">{row.patientRef || row.patientId || '—'}</span>
+        <span className="font-mono text-xs text-muted-foreground">{row.patientRef || '—'}</span>
       ),
     },
     { key: 'date', header: 'Date', render: (row) => formatDate(row.date) },

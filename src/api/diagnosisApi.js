@@ -169,7 +169,22 @@ export const diagnosisApi = {
       const { error: uploadError } = await supabase.storage
         .from('cbct-scans')
         .upload(`${user.id}/${session.id}/${cbctFile.name}`, cbctFile, { upsert: true })
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        const message =
+          uploadError.statusCode === 413 ||
+          uploadError.message?.toLowerCase().includes('too large') ||
+          uploadError.message?.toLowerCase().includes('size limit') ||
+          uploadError.message?.toLowerCase().includes('quota')
+            ? 'Upload failed — the scan exceeds the storage limit for this account. Try a smaller or compressed file, or increase your storage quota.'
+            : `Upload failed — ${uploadError.message || 'unable to store the scan.'}`
+        const err = new Error(message)
+        err.code = 'STORAGE_UPLOAD_FAILED'
+        await supabase
+          .from('diagnosis_sessions')
+          .update({ stage: DIAGNOSIS_STAGE.FAILED, progress: 0 })
+          .eq('id', session.id)
+        throw err
+      }
 
       const { error: updateError } = await supabase
         .from('diagnosis_sessions')
@@ -204,7 +219,7 @@ export const diagnosisApi = {
     const { data, error } = await supabase
       .from('diagnosis_sessions')
       .select(
-        'id, patient_id, patient_reference, patient_name, patient_age, patient_sex, patient_weight, clinical_notes, cbct_file_name, created_at, diseases'
+        'id, patient_id, patient_reference, patient_name, patient_age, patient_sex, patient_weight, clinical_notes, cbct_file_name, cbct_file_path, created_at, diseases'
       )
       .eq('id', sessionId)
       .limit(1)
@@ -228,7 +243,7 @@ export const diagnosisApi = {
     return {
       sessionId,
       patient: {
-        patientId: row.patient_reference || row.patient_id,
+        patientId: row.patient_reference || '',
         name: row.patient_name,
         age: row.patient_age,
         sex: row.patient_sex,
@@ -238,6 +253,7 @@ export const diagnosisApi = {
       inputSummary: {
         cbctUploaded: Boolean(row.cbct_file_name),
         cbctFileName: row.cbct_file_name,
+        cbctFilePath: row.cbct_file_path,
         clinicalNotesReceived: true,
       },
       clinicalNotes: row.clinical_notes,

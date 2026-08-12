@@ -15,6 +15,35 @@ import { DiagnosisService } from '@/services/DiagnosisService'
 import { useToast } from '@/hooks/useToast'
 import { ROUTES } from '@/constants/routes'
 
+function TreatmentSummary({ text }) {
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
+  const intro = lines.find((l) => !l.startsWith('•'))
+  const bullets = lines.filter((l) => l.startsWith('•'))
+
+  return (
+    <div className="flex flex-col gap-3">
+      {intro && (
+        <p className="text-xs text-muted-foreground">{intro}</p>
+      )}
+      {bullets.length > 0 ? (
+        <ul className="space-y-2">
+          {bullets.map((b, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm leading-relaxed text-foreground"
+            >
+              <span className="mt-0.5 text-primary">•</span>
+              <span>{b.slice(1).trim()}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{text}</p>
+      )}
+    </div>
+  )
+}
+
 export default function DiagnosisResult() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
@@ -56,7 +85,10 @@ export default function DiagnosisResult() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <InputSummary inputSummary={result.inputSummary} />
-          <CBCTPreviewPanel fileName={result.inputSummary?.cbctFileName} />
+          <CBCTPreviewPanel
+            fileName={result.inputSummary?.cbctFileName}
+            filePath={result.inputSummary?.cbctFilePath}
+          />
         </div>
 
         <Card>
@@ -78,9 +110,7 @@ export default function DiagnosisResult() {
               <h3 className="text-sm font-medium text-foreground">Treatment summary</h3>
             </Card.Header>
             <Card.Body>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                {result.treatmentSummary}
-              </p>
+              <TreatmentSummary text={result.treatmentSummary} />
             </Card.Body>
           </Card>
         )}

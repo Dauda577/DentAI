@@ -8,6 +8,7 @@ const TONES = {
 
 export default function ProgressBar({ value = 0, tone = 'accent', className = '', showLabel = false }) {
   const clamped = Math.min(100, Math.max(0, value))
+  const rounded = Math.round(clamped)
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
@@ -16,12 +17,12 @@ export default function ProgressBar({ value = 0, tone = 'accent', className = ''
           className={`h-full rounded-full transition-[width] duration-500 ease-out ${TONES[tone]}`}
           style={{ width: `${clamped}%` }}
           role="progressbar"
-          aria-valuenow={clamped}
+          aria-valuenow={rounded}
           aria-valuemin={0}
           aria-valuemax={100}
         />
       </div>
-      {showLabel && <span className="text-xs tabular-nums text-muted-foreground">{Math.round(clamped)}%</span>}
+      {showLabel && <span className="text-xs tabular-nums text-muted-foreground">{rounded}%</span>}
     </div>
   )
 }
