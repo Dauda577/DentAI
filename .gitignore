@@ -29,3 +29,7 @@ supabase/.temp/
 
 # Model weights (deployed via Modal from local files, not committed to git)
 inference/modal/artifacts/
+
+# Python build artifacts
+__pycache__/
+*.pyc
