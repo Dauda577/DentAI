@@ -56,4 +56,30 @@ export const reportApi = {
     if (error) throw error
     return mapReport(ensureSingle(data))
   },
+
+  async create(sessionId, { type = 'Diagnostic Report', summary = '' } = {}) {
+    const { data: session, error: sessionError } = await supabase
+      .from('diagnosis_sessions')
+      .select('id, user_id, patient_id, patient_reference, patient_name')
+      .eq('id', sessionId)
+      .single()
+    if (sessionError) throw sessionError
+
+    const { data, error } = await supabase
+      .from('reports')
+      .insert({
+        user_id: session.user_id,
+        session_id: session.id,
+        patient_id: session.patient_id,
+        patient_reference: session.patient_reference,
+        patient_name: session.patient_name,
+        type,
+        status: 'generated',
+        summary,
+      })
+      .select(SELECT_FIELDS)
+      .single()
+    if (error) throw error
+    return mapReport(data)
+  },
 }

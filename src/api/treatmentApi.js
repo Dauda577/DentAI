@@ -48,21 +48,32 @@ export const treatmentApi = {
 
     const { data: existing, error: readError } = await supabase
       .from('treatment_plans')
-      .select('phases')
+      .select('phases,notes')
       .eq('session_id', sessionId)
       .limit(1)
     if (readError) throw readError
     if (existing && existing.length > 0) {
-      return { sessionId, phases: existing[0].phases ?? [] }
+      return { sessionId, phases: existing[0].phases ?? [], notes: existing[0].notes ?? '' }
     }
 
     const { data, error } = await supabase
       .from('treatment_plans')
-      .insert({ user_id: user?.id, session_id: sessionId, phases: MOCK_PHASES })
+      .upsert({ user_id: user?.id, session_id: sessionId, phases: MOCK_PHASES }, { onConflict: 'session_id' })
       .select('phases')
       .single()
     if (error) throw error
 
-    return { sessionId, phases: data.phases ?? [] }
+    return { sessionId, phases: data.phases ?? [], notes: '' }
+  },
+
+  async updateNotes(sessionId, notes) {
+    const { data, error } = await supabase
+      .from('treatment_plans')
+      .update({ notes })
+      .eq('session_id', sessionId)
+      .select('notes')
+    if (error) throw error
+
+    return { sessionId, notes: data?.[0]?.notes ?? '' }
   },
 }

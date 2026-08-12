@@ -15,4 +15,12 @@ export const TreatmentService = {
       throw normalizeError(error)
     }
   },
+
+  async saveNotes(sessionId, notes) {
+    try {
+      return await treatmentApi.updateNotes(sessionId, notes)
+    } catch (error) {
+      throw normalizeError(error)
+    }
+  },
 }

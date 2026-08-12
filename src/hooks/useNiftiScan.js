@@ -27,6 +27,7 @@ export function useNiftiScan(filePath, { enabled = true } = {}) {
   const [volume, setVolume] = useState(null)
   const [dimensions, setDimensions] = useState(null)
   const [windowLevel, setWindowLevel] = useState(null)
+  const [fullRangeWindow, setFullRangeWindow] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -80,7 +81,9 @@ export function useNiftiScan(filePath, { enabled = true } = {}) {
         if (cancelled) return
         setVolume(scaled)
         setDimensions(dims)
-        setWindowLevel({ windowWidth: max - min, windowCenter: (max + min) / 2 })
+        const fullRange = { windowWidth: max - min, windowCenter: (max + min) / 2 }
+        setFullRangeWindow(fullRange)
+        setWindowLevel(fullRange)
         setLoading(false)
       } catch (err) {
         if (!cancelled) {
@@ -122,6 +125,7 @@ export function useNiftiScan(filePath, { enabled = true } = {}) {
     dimensions,
     windowLevel,
     setWindowLevel,
+    fullRangeWindow,
     getSliceImageData,
     totalSlices,
     loading,

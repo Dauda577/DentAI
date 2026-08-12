@@ -7,6 +7,15 @@ import { useNiftiScan } from '@/hooks/useNiftiScan'
 
 const fmt = (v) => (Math.round(v * 10) / 10).toLocaleString()
 
+// Standard clinical CT window/level presets (width, center). The "Full range"
+// preset uses the scan's own min/max values from `fullRangeWindow`.
+const PRESETS = [
+  { label: 'Bone', windowWidth: 1500, windowCenter: 450 },
+  { label: 'Soft tissue', windowWidth: 400, windowCenter: 40 },
+]
+
+const matches = (a, b) => a != null && b != null && Math.round(a) === Math.round(b)
+
 /**
  * Renders a single scan slice and the slice/window-level controls. Shared by
  * the inline panel and the full-size modal viewer so both stay in sync.
@@ -18,6 +27,7 @@ function ScanViewer({
   onSliceChange,
   windowLevel,
   onWindowLevelChange,
+  fullRangeWindow,
   maxHeight,
   onCanvasClick,
 }) {
@@ -70,6 +80,44 @@ function ScanViewer({
         </span>
       </div>
 
+      <div className="flex flex-wrap items-center gap-1.5">
+        {PRESETS.map((p) => (
+          <button
+            key={p.label}
+            onClick={() => onWindowLevelChange({ windowWidth: p.windowWidth, windowCenter: p.windowCenter })}
+            className={`rounded-md border px-2 py-1 text-xs font-medium ${
+              matches(windowLevel.windowWidth, p.windowWidth) &&
+              matches(windowLevel.windowCenter, p.windowCenter)
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border text-muted-foreground hover:bg-card-hover hover:text-foreground'
+            }`}
+          >
+            {p.label}
+          </button>
+        ))}
+        {fullRangeWindow && (
+          <button
+            onClick={() => onWindowLevelChange({ ...fullRangeWindow })}
+            className={`rounded-md border px-2 py-1 text-xs font-medium ${
+              matches(windowLevel.windowWidth, fullRangeWindow.windowWidth) &&
+              matches(windowLevel.windowCenter, fullRangeWindow.windowCenter)
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border text-muted-foreground hover:bg-card-hover hover:text-foreground'
+            }`}
+          >
+            Full range
+          </button>
+        )}
+        <span className="mx-1 h-4 w-px bg-border" />
+        <button
+          onClick={() => fullRangeWindow && onWindowLevelChange({ ...fullRangeWindow })}
+          disabled={!fullRangeWindow}
+          className="rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-card-hover hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Reset
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
           <span className="text-xs text-muted-foreground">
@@ -117,8 +165,16 @@ export default function CBCTPreviewPanel({ fileName, filePath }) {
   const [sliceIndex, setSliceIndex] = useState(0)
   const [viewerOpen, setViewerOpen] = useState(false)
 
-  const { dimensions, windowLevel, setWindowLevel, getSliceImageData, totalSlices, loading, error } =
-    useNiftiScan(filePath, { enabled: Boolean(filePath) })
+  const {
+    dimensions,
+    windowLevel,
+    setWindowLevel,
+    fullRangeWindow,
+    getSliceImageData,
+    totalSlices,
+    loading,
+    error,
+  } = useNiftiScan(filePath, { enabled: Boolean(filePath) })
 
   useEffect(() => {
     setSliceIndex((cur) => (cur > 0 && cur < (totalSlices || 1) ? cur : Math.floor(totalSlices / 2)))
@@ -182,6 +238,7 @@ export default function CBCTPreviewPanel({ fileName, filePath }) {
                       onSliceChange={setSliceIndex}
                       windowLevel={windowLevel}
                       onWindowLevelChange={setWindowLevel}
+                      fullRangeWindow={fullRangeWindow}
                       maxHeight="min(340px, 40vh)"
                       onCanvasClick={() => setViewerOpen(true)}
                     />
@@ -211,7 +268,8 @@ export default function CBCTPreviewPanel({ fileName, filePath }) {
           onSliceChange={setSliceIndex}
           windowLevel={windowLevel}
           onWindowLevelChange={setWindowLevel}
-          maxHeight="min(70vh, 640px)"
+          fullRangeWindow={fullRangeWindow}
+          maxHeight="min(50vh, 480px)"
         />
       </Modal>
     </Card>

@@ -25,4 +25,12 @@ export const ReportService = {
       throw normalizeError(error)
     }
   },
+
+  async create(sessionId, payload) {
+    try {
+      return await reportApi.create(sessionId, payload)
+    } catch (error) {
+      throw normalizeError(error)
+    }
+  },
 }

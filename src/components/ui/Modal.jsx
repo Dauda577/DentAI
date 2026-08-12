@@ -40,7 +40,7 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
     }
   }, [isOpen, onClose])
 
-  const widths = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-5xl' }
+  const widths = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-3xl' }
 
   return createPortal(
     <AnimatePresence>
@@ -63,10 +63,10 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className={`relative w-full ${widths[size]} rounded-card border border-border bg-card shadow-xl`}
+            className={`relative flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden ${widths[size]} rounded-card border border-border bg-card shadow-xl`}
           >
             {title && (
-              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
                 <h2 className="font-display text-base font-medium text-foreground">{title}</h2>
                 <button
                   onClick={onClose}
@@ -77,8 +77,10 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
                 </button>
               </div>
             )}
-            <div className="px-5 py-4">{children}</div>
-            {footer && <div className="flex justify-end gap-2 border-t border-border px-5 py-4">{footer}</div>}
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
+            {footer && (
+              <div className="flex shrink-0 justify-end gap-2 border-t border-border px-5 py-4">{footer}</div>
+            )}
           </motion.div>
         </div>
       )}
