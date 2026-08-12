@@ -72,6 +72,19 @@ export default function DiagnosisResult() {
 
         <ClinicalNotesSummary notes={result.clinicalNotes} />
 
+        {result.treatmentSummary && (
+          <Card>
+            <Card.Header>
+              <h3 className="text-sm font-medium text-foreground">Treatment summary</h3>
+            </Card.Header>
+            <Card.Body>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {result.treatmentSummary}
+              </p>
+            </Card.Body>
+          </Card>
+        )}
+
         <div className="flex flex-wrap justify-end gap-2">
           <Button variant="secondary" onClick={() => navigate(ROUTES.DASHBOARD)}>
             Back

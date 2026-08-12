@@ -2,23 +2,15 @@ import { supabase } from '@/lib/supabaseClient'
 import { DIAGNOSIS_STAGE } from '@/constants/status'
 
 // --- Inference ------------------------------------------------------------
-// Set VITE_INFERENCE_API_URL to use a real CBCT diagnosis API.
-// When unset, a time-based mock provides visual feedback.
+// Points at the deployed inference service. When unset, submissions fail
+// fast (stage = failed) instead of falling back to mock data.
 const INFERENCE_API_URL = import.meta.env.VITE_INFERENCE_API_URL || ''
-const STAGE_ORDER = [
-  DIAGNOSIS_STAGE.UPLOADING,
-  DIAGNOSIS_STAGE.PREPARING,
-  DIAGNOSIS_STAGE.PROCESSING,
-  DIAGNOSIS_STAGE.GENERATING,
-  DIAGNOSIS_STAGE.FINALIZING,
-]
-const STAGE_DURATION_MS = 1400
 
-const MOCK_RESULT_DISEASES = [
-  { name: 'Caries', confidence: 0.86, status: 'Detected' },
-  { name: 'Damaged / Missing Tooth', confidence: 0.71, status: 'Detected' },
-  { name: 'Pulpitis', confidence: 0.58, status: 'Possible' },
-  { name: 'Impacted Tooth', confidence: 0.19, status: 'Unlikely' },
+// Clinical-note field names (camelCase form state) -> model field names.
+const STATUS_THRESHOLDS = [
+  { threshold: 0.75, status: 'Detected' },
+  { threshold: 0.45, status: 'Possible' },
+  { threshold: 0, status: 'Unlikely' },
 ]
 
 function ensureSingle(data) {
@@ -107,6 +99,41 @@ async function generateReport(sessionId) {
   })
 }
 
+// Writes a status/progress update to a session. If the update fails solely
+// because the treatment_summary column has not been migrated yet, retries
+// without that field so the rest of the pipeline never gets stuck.
+async function updateSession(sessionId, fields) {
+  const { error } = await supabase
+    .from('diagnosis_sessions')
+    .update(fields)
+    .eq('id', sessionId)
+  if (error && Object.prototype.hasOwnProperty.call(fields, 'treatment_summary')) {
+    const { treatment_summary: _treatment_summary, ...rest } = fields
+    const retry = await supabase
+      .from('diagnosis_sessions')
+      .update(rest)
+      .eq('id', sessionId)
+    if (retry.error) throw retry.error
+    return
+  }
+  if (error) throw error
+}
+
+async function sendCompletionEmail(sessionId) {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    const token = session?.access_token
+    if (!token) return
+    await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-diagnosis-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ sessionId }),
+    })
+  } catch {}
+}
+
 export const diagnosisApi = {
   async submit({ patientInfo, clinicalNotes, cbctFile }) {
     const {
@@ -154,46 +181,23 @@ export const diagnosisApi = {
       if (updateError) throw updateError
     }
 
+    // Start the real inference run in the background. The Processing page
+    // polls getStatus (a pure DB read) until it reaches a terminal stage.
+    diagnosisApi.runRealInference(session.id).catch(() => {})
+
     return { sessionId: session.id }
   },
 
   async getStatus(sessionId) {
     const { data, error } = await supabase
       .from('diagnosis_sessions')
-      .select('id, stage, created_at')
+      .select('id, stage, progress')
       .eq('id', sessionId)
       .limit(1)
     if (error) throw error
     const row = ensureSingle(data)
 
-    if (row.stage === DIAGNOSIS_STAGE.COMPLETE || row.stage === DIAGNOSIS_STAGE.FAILED) {
-      return { sessionId, stage: row.stage, progress: 100 }
-    }
-
-    const elapsed = Date.now() - new Date(row.created_at).getTime()
-    const stageIndex = Math.min(STAGE_ORDER.length, Math.floor(elapsed / STAGE_DURATION_MS))
-    const isComplete = stageIndex >= STAGE_ORDER.length
-    const totalDuration = STAGE_ORDER.length * STAGE_DURATION_MS
-    const progress = Math.min(100, Math.round((elapsed / totalDuration) * 100))
-
-    if (isComplete) {
-      const { error: finalizeError } = await supabase
-        .from('diagnosis_sessions')
-        .update({
-          stage: DIAGNOSIS_STAGE.COMPLETE,
-          progress: 100,
-          diseases: MOCK_RESULT_DISEASES,
-        })
-        .eq('id', sessionId)
-        .eq('stage', DIAGNOSIS_STAGE.UPLOADING)
-      if (finalizeError) throw finalizeError
-
-      generateReport(sessionId).catch(() => {})
-
-      return { sessionId, stage: DIAGNOSIS_STAGE.COMPLETE, progress: 100 }
-    }
-
-    return { sessionId, stage: STAGE_ORDER[stageIndex], progress }
+    return { sessionId, stage: row.stage, progress: row.progress ?? 0 }
   },
 
   async getResult(sessionId) {
@@ -213,6 +217,14 @@ export const diagnosisApi = {
       throw err
     }
 
+    let treatmentSummary = null
+    const extra = await supabase
+      .from('diagnosis_sessions')
+      .select('treatment_summary')
+      .eq('id', sessionId)
+      .limit(1)
+    if (!extra.error) treatmentSummary = extra.data?.[0]?.treatment_summary ?? null
+
     return {
       sessionId,
       patient: {
@@ -230,57 +242,92 @@ export const diagnosisApi = {
       },
       clinicalNotes: row.clinical_notes,
       diseases: row.diseases,
+      treatmentSummary,
     }
   },
 
+  // Drives a full inference run for a session and writes every stage to the
+  // DB. Safe to call more than once (e.g. from the Processing page Retry).
   async runRealInference(sessionId) {
-    if (!INFERENCE_API_URL) return null
+    if (!INFERENCE_API_URL) {
+      await updateSession(sessionId, { stage: DIAGNOSIS_STAGE.FAILED })
+      const err = new Error('Inference service is not configured')
+      err.code = 'INFERENCE_NOT_CONFIGURED'
+      throw err
+    }
 
     const { data: session } = await supabase
       .from('diagnosis_sessions')
-      .select('patient_name, patient_age, patient_sex, clinical_notes, cbct_file_path')
+      .select('patient_age, patient_sex, clinical_notes, cbct_file_path, cbct_file_name')
       .eq('id', sessionId)
       .maybeSingle()
-    if (!session) return null
+    if (!session) return
+
+    await updateSession(sessionId, { stage: DIAGNOSIS_STAGE.PREPARING, progress: 20 })
 
     let cbctBlob = null
     if (session.cbct_file_path) {
-      const { data: fileData, error: dlErr } = await supabase.storage
+      const { data: fileData } = await supabase.storage
         .from('cbct-scans')
         .download(session.cbct_file_path)
-      if (!dlErr && fileData) cbctBlob = fileData
+      if (fileData) cbctBlob = fileData
     }
 
+    await updateSession(sessionId, { stage: DIAGNOSIS_STAGE.PROCESSING, progress: 40 })
+
+    const notes = session.clinical_notes || {}
     const form = new FormData()
-    if (cbctBlob) form.append('cbct', cbctBlob, 'scan.nii')
-    form.append('present_medical_history', session.clinical_notes || '')
+    form.append('main_appeal', notes.chiefComplaint || '')
+    form.append('subsequent', notes.subsequent || '')
+    form.append('present_medical_history', notes.presentMedicalHistory || '')
+    form.append('past_medical_history', notes.pastMedicalHistory || '')
+    form.append('oral_check', notes.oralExamination || '')
     if (session.patient_age != null) form.append('age', String(session.patient_age))
     if (session.patient_sex) form.append('sex', session.patient_sex)
-
-    const resp = await fetch(`${INFERENCE_API_URL}/diagnose`, { method: 'POST', body: form })
-    if (!resp.ok) throw new Error(`Inference API returned ${resp.status}`)
-    const result = await resp.json()
-
-    if (result.diseases) {
-      const STATUS_THRESHOLDS = [
-        { threshold: 0.75, status: 'Detected' },
-        { threshold: 0.45, status: 'Possible' },
-        { threshold: 0, status: 'Unlikely' },
-      ]
-      const diseases = Object.entries(result.diseases).map(([name, prob]) => {
-        const label = name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-        const status = STATUS_THRESHOLDS.find(t => prob >= t.threshold)?.status ?? 'Unlikely'
-        return { name: label, confidence: Math.round(prob * 100) / 100, status }
-      })
-
-      await supabase
-        .from('diagnosis_sessions')
-        .update({ diseases })
-        .eq('id', sessionId)
-
-      return diseases
+    if (cbctBlob) {
+      // Send with the original filename so the service picks the right
+      // reader. The service falls back to text-only if it cannot parse it.
+      form.append('cbct', cbctBlob, session.cbct_file_name || 'scan.nii')
     }
 
-    return null
+    await updateSession(sessionId, { stage: DIAGNOSIS_STAGE.GENERATING, progress: 70 })
+
+    let resp
+    try {
+      resp = await fetch(`${INFERENCE_API_URL}/predict`, { method: 'POST', body: form })
+    } catch (err) {
+      await updateSession(sessionId, { stage: DIAGNOSIS_STAGE.FAILED })
+      throw err
+    }
+    if (!resp.ok) {
+      await updateSession(sessionId, { stage: DIAGNOSIS_STAGE.FAILED })
+      throw new Error(`Inference API returned ${resp.status}`)
+    }
+    const result = await resp.json()
+
+    const probabilities =
+      result?.probabilities && typeof result.probabilities === 'object' ? result.probabilities : {}
+
+    const diseases = Object.entries(probabilities).map(([name, prob]) => {
+      const label = name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+      const status = STATUS_THRESHOLDS.find((t) => prob >= t.threshold)?.status ?? 'Unlikely'
+      return { name: label, confidence: Math.round(prob * 100) / 100, status }
+    })
+
+    await updateSession(sessionId, {
+      stage: DIAGNOSIS_STAGE.FINALIZING,
+      progress: 90,
+      diseases,
+      treatment_summary: result.treatment_summary ?? null,
+    })
+
+    await updateSession(sessionId, { stage: DIAGNOSIS_STAGE.COMPLETE, progress: 100 })
+
+    // Report + email are generated only after results are persisted, so they
+    // can never race ahead of the real model output.
+    generateReport(sessionId).catch(() => {})
+    sendCompletionEmail(sessionId).catch(() => {})
+
+    return diseases
   },
 }

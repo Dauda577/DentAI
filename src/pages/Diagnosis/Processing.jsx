@@ -1,50 +1,38 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import PageHeader from '@/components/common/PageHeader'
 import Card from '@/components/ui/Card'
+import LoadingOverlay from '@/components/ui/LoadingOverlay'
+import ErrorState from '@/components/common/ErrorState'
 import ProcessingStages from '@/components/diagnosis/ProcessingStages'
 import { DiagnosisService } from '@/services/DiagnosisService'
 import { diagnosisApi } from '@/api/diagnosisApi'
-import { supabase } from '@/lib/supabaseClient'
 import { usePolling } from '@/hooks/usePolling'
 import { useToast } from '@/hooks/useToast'
 import { DIAGNOSIS_STAGE } from '@/constants/status'
 import { ROUTES } from '@/constants/routes'
 
-async function finalizeSession(sessionId) {
-  // Start real inference (silent, best-effort) — updates DB with real diseases
-  // if INFERENCE_API_URL is configured, otherwise a no-op.
-  diagnosisApi.runRealInference(sessionId).catch(() => {})
-
-  // Email notification: fire-and-forget
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    const token = session?.access_token
-    if (!token) return
-    await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-diagnosis-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ sessionId }),
-    })
-  } catch {}
-}
-
 export default function Processing() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
   const toast = useToast()
+  const [isRetrying, setIsRetrying] = useState(false)
 
   const fetchStatus = useCallback(() => DiagnosisService.getStatus(sessionId), [sessionId])
-  const isComplete = useCallback((result) => result?.stage === DIAGNOSIS_STAGE.COMPLETE, [])
+  const isTerminal = useCallback(
+    (result) =>
+      result?.stage === DIAGNOSIS_STAGE.COMPLETE || result?.stage === DIAGNOSIS_STAGE.FAILED,
+    []
+  )
 
   const { data, error } = usePolling(fetchStatus, {
-    intervalMs: 600,
-    stopWhen: isComplete,
+    intervalMs: 1500,
+    stopWhen: isTerminal,
+    enabled: !isRetrying,
   })
 
   useEffect(() => {
     if (data?.stage === DIAGNOSIS_STAGE.COMPLETE) {
-      finalizeSession(sessionId)
       navigate(ROUTES.DIAGNOSIS_RESULT(sessionId), { replace: true })
     }
   }, [data, navigate, sessionId])
@@ -57,11 +45,42 @@ export default function Processing() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error])
 
+  const handleRetry = async () => {
+    setIsRetrying(true)
+    try {
+      await diagnosisApi.runRealInference(sessionId)
+    } catch (err) {
+      toast.error(err.message || 'Inference failed. Please try again.')
+    } finally {
+      setIsRetrying(false)
+    }
+  }
+
+  if (isRetrying) {
+    return <LoadingOverlay label="Retrying diagnosis…" />
+  }
+
+  if (data?.stage === DIAGNOSIS_STAGE.FAILED) {
+    return (
+      <div>
+        <PageHeader
+          title="Diagnosis failed"
+          description="The inference service could not complete this diagnosis."
+        />
+        <ErrorState
+          title="Unable to complete diagnosis"
+          message="The model could not process this case. You can retry — the patient and clinical notes are still saved."
+          onRetry={handleRetry}
+        />
+      </div>
+    )
+  }
+
   return (
     <div>
       <PageHeader
         title="Processing diagnosis"
-        description="This usually takes under a minute — you can leave this page and come back."
+        description="Usually under a minute — stay on this page while the model runs."
       />
       <Card>
         <Card.Body>
